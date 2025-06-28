@@ -159,7 +159,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
+            <button 
+              onClick={() => router.push('/group-chat')}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+            >
               <Users className="h-4 w-4 text-slate-600" />
               <span className="text-sm text-slate-600">My Groups</span>
             </button>
@@ -220,15 +223,6 @@ export default function DashboardPage() {
               </ul>
             )}
             </div>
-          <div className="flex flex-col space-y-2">
-            <button
-              className="flex items-center px-4 py-2 rounded hover:bg-blue-100 text-blue-700 font-medium transition-colors"
-              onClick={() => router.push('/group-chat')}
-            >
-              <Users className="h-5 w-5 mr-2" />
-              Group
-            </button>
-          </div>
         </aside>
 
         {/* Main Content */}
