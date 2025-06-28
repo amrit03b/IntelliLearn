@@ -52,7 +52,6 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   const [showQuizResults, setShowQuizResults] = useState<{ [key: string]: boolean }>({});
   const [quizScores, setQuizScores] = useState<{ [key: string]: { correct: number; total: number } }>({});
 
-  const [numQuizQuestions, setNumQuizQuestions] = useState<{ [key: string]: number }>({});
   const [quizLoading, setQuizLoading] = useState<{ [key: string]: boolean }>({});
 
   // If chaptersProp changes, update chapters state
@@ -217,19 +216,18 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   };
 
   const regenerateQuiz = useCallback(async (chapter: Chapter) => {
-    const numQuestions = numQuizQuestions[chapter.id] || 5;
     setQuizLoading((prev) => ({ ...prev, [chapter.id]: true }));
     try {
       const response = await fetch("/api/generate-knowledge-tree", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ syllabusContent, numQuestions }),
+        body: JSON.stringify({ syllabusContent, numQuestions: 5 }),
       });
       const data = await response.json();
       // Find the updated chapter by id
-      const updated = data.chapters?.find((c: Chapter) => c.id === chapter.id);
+      const updated = data.chapters?.find((c: Chapter) => c.id === chapter.id || c.title === chapter.title);
       if (updated) {
-        setChapters((prev) => prev.map((c) => (c.id === chapter.id ? { ...c, practiceQuestions: updated.practiceQuestions } : c)));
+        setChapters((prev) => prev.map((c) => (c.id === chapter.id || c.title === chapter.title ? { ...c, practiceQuestions: updated.practiceQuestions } : c)));
         // Reset quiz state for this chapter
         setQuizMode((prev) => ({ ...prev, [chapter.id]: false }));
         setShowQuizResults((prev) => ({ ...prev, [chapter.id]: false }));
@@ -241,7 +239,7 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
     } finally {
       setQuizLoading((prev) => ({ ...prev, [chapter.id]: false }));
     }
-  }, [numQuizQuestions, syllabusContent]);
+  }, [syllabusContent]);
 
   if (loading) {
     return (
@@ -378,25 +376,6 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                     <span className="text-sm text-slate-500">({chapter.practiceQuestions.length} questions)</span>
                   </h5>
                   
-                  <div className="flex items-center space-x-2 mb-4">
-                    <label className="text-sm text-slate-700">Number of Quiz Questions:</label>
-                    <select
-                      value={numQuizQuestions[chapter.id] || 5}
-                      onChange={e => setNumQuizQuestions(prev => ({ ...prev, [chapter.id]: parseInt(e.target.value) }))}
-                      className="border border-slate-300 rounded px-2 py-1 text-sm"
-                      disabled={quizLoading[chapter.id]}
-                    >
-                      {[3, 5, 7, 10].map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                    <button
-                      onClick={() => regenerateQuiz(chapter)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm disabled:bg-slate-300"
-                      disabled={quizLoading[chapter.id]}
-                    >
-                      {quizLoading[chapter.id] ? "Generating..." : "Generate Quiz"}
-                    </button>
-                  </div>
-                  
                   {!quizMode[chapter.id] && !showQuizResults[chapter.id] && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <p className="text-green-800 mb-3">Test your understanding with multiple-choice questions!</p>
@@ -409,97 +388,72 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                     </div>
                   )}
 
-                  {quizMode[chapter.id] && !showQuizResults[chapter.id] && (
+                  {(quizMode[chapter.id] || showQuizResults[chapter.id]) && (
                     <div className="space-y-4">
                       {chapter.practiceQuestions.map((question, idx) => (
-                        <div key={idx} className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                        <div key={idx} className={`bg-slate-50 border border-slate-200 rounded-lg p-4 ${showQuizResults[chapter.id] ? ((userAnswers[chapter.id]?.[idx] === question.correctAnswer) ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : ''}`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                              MCQ
-                            </span>
+                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">MCQ</span>
                             <span className="text-sm text-slate-600">Question {idx + 1}</span>
                           </div>
-                          
                           <p className="font-medium text-slate-800 mb-3">{question.question}</p>
-                          
                           <div className="space-y-2">
-                            {question.options.map((option, optionIdx) => (
-                              <label key={optionIdx} className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`question-${chapter.id}-${idx}`}
-                                  value={option}
-                                  onChange={(e) => handleAnswerChange(chapter.id, idx, e.target.value)}
-                                  className="text-blue-600"
-                                />
-                                <span className="text-slate-700">{option}</span>
-                              </label>
-                            ))}
+                            {Array.isArray(question.options) ? (
+                              question.options.map((option, optionIdx) => (
+                                <label key={optionIdx} className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`question-${chapter.id}-${idx}`}
+                                    value={option}
+                                    checked={userAnswers[chapter.id]?.[idx] === option}
+                                    onChange={(e) => handleAnswerChange(chapter.id, idx, e.target.value)}
+                                    className="text-blue-600"
+                                    disabled={showQuizResults[chapter.id]}
+                                  />
+                                  <span className={showQuizResults[chapter.id] && option === question.correctAnswer ? 'font-bold text-green-700' : 'text-slate-700'}>{option}</span>
+                                  {showQuizResults[chapter.id] && option === question.correctAnswer && (
+                                    <span className="ml-2 text-green-600 text-xs">(Correct)</span>
+                                  )}
+                                </label>
+                              ))
+                            ) : (
+                              <div className="text-red-600 text-xs">Invalid options for this question.</div>
+                            )}
                           </div>
+                          {showQuizResults[chapter.id] && (
+                            <div className="mt-2 text-sm text-slate-600">
+                              <span className="font-medium">Explanation:</span> {renderWithBold(question.explanation)}
+                            </div>
+                          )}
                         </div>
                       ))}
-                      
                       <div className="flex space-x-3">
-                        <button
-                          onClick={() => submitQuiz(chapter.id)}
-                          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Submit Quiz
-                        </button>
+                        {!showQuizResults[chapter.id] && (
+                          <button
+                            onClick={() => submitQuiz(chapter.id)}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Submit Quiz
+                          </button>
+                        )}
                         <button
                           onClick={() => resetQuiz(chapter.id)}
                           className="bg-slate-300 text-slate-700 px-6 py-2 rounded-lg hover:bg-slate-400 transition-colors"
                         >
-                          Cancel
+                          {showQuizResults[chapter.id] ? 'Try Again' : 'Cancel'}
                         </button>
                       </div>
-                    </div>
-                  )}
-
-                  {showQuizResults[chapter.id] && (
-                    <div className="space-y-4">
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h6 className="font-semibold text-blue-800 mb-2">Quiz Results</h6>
-                        <p className="text-blue-700">
-                          Score: {quizScores[chapter.id]?.correct || 0} out of {quizScores[chapter.id]?.total || 0} correct
-                          ({Math.round(((quizScores[chapter.id]?.correct || 0) / (quizScores[chapter.id]?.total || 1)) * 100)}%)
-                        </p>
-                      </div>
-                      
-                      {chapter.practiceQuestions.map((question, idx) => {
-                        const userAnswer = userAnswers[chapter.id]?.[idx] || "";
-                        const isCorrect = userAnswer === question.correctAnswer;
-                        
-                        return (
-                          <div key={idx} className={`border rounded-lg p-4 ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                            <div className="flex items-center space-x-2 mb-2">
-                              {isCorrect ? (
-                                <span className="text-green-600">✓</span>
-                              ) : (
-                                <span className="text-red-600">✗</span>
-                              )}
-                              <span className={`text-sm font-medium ${isCorrect ? 'text-green-800' : 'text-red-800'}`}>
-                                {isCorrect ? 'Correct' : 'Incorrect'}
-                              </span>
-                            </div>
-                            
-                            <p className="font-medium text-slate-800 mb-2">{question.question}</p>
-                            
-                            <div className="space-y-1 text-sm">
-                              <p><span className="font-medium">Your answer:</span> {userAnswer || '(No answer)'}</p>
-                              <p><span className="font-medium">Correct answer:</span> {question.correctAnswer}</p>
-                              <p className="mt-2 text-slate-600">{renderWithBold(question.explanation)}</p>
-                            </div>
+                      {showQuizResults[chapter.id] && (
+                        <div className="space-y-4 mt-6">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h6 className="font-semibold text-blue-800 mb-2">Quiz Results</h6>
+                            <p className="text-blue-700">
+                              Score: {quizScores[chapter.id]?.correct || 0} out of {quizScores[chapter.id]?.total || 0} correct
+                              ({Math.round(((quizScores[chapter.id]?.correct || 0) / (quizScores[chapter.id]?.total || 1)) * 100)}%)
+                            </p>
                           </div>
-                        );
-                      })}
-                      
-                      <button
-                        onClick={() => resetQuiz(chapter.id)}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Try Again
-                      </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
