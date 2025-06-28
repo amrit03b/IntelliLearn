@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { syllabusContent } = await req.json();
+  const { syllabusContent, numQuestions } = await req.json();
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
@@ -31,7 +31,13 @@ For each chapter, provide:
 3. At the end of each chapter, add a section called "Most Probable Exam Questions" as an array of 3-5 objects. Each object should have:
    - question: the exam question (plain text)
    - answer: a detailed, exam-oriented answer (plain text, you may use double asterisks (**) for bold, but no other markdown/HTML)
-4. Also provide a youtubeQueries array (2-3 objects). Each object should have:
+4. Also provide a "Practice Questions" array with ${numQuestions || 5} multiple-choice questions. Each question should have:
+   - type: "multiple-choice" (all questions should be multiple choice)
+   - question: the question text (plain text)
+   - options: array of 4 options
+   - correctAnswer: the correct answer (must match one of the options exactly)
+   - explanation: brief explanation of why this is correct (plain text, you may use double asterisks (**) for bold)
+5. Also provide a youtubeQueries array (2-3 objects). Each object should have:
    - query: a search query for a relevant YouTube video for this chapter
    - timestamp: the timestamp in seconds where the topic starts in the video (e.g., 120 for 2 minutes)
 
@@ -43,6 +49,15 @@ Format the response as a JSON array. Each chapter should have:
   "mostProbableQuestions": [
     { "question": "Question 1", "answer": "Detailed answer in plain text, with **bold** for important points." },
     { "question": "Question 2", "answer": "Detailed answer in plain text." }
+  ],
+  "practiceQuestions": [
+    {
+      "type": "multiple-choice",
+      "question": "What is the time complexity of accessing an element in an array?",
+      "options": ["O(1)", "O(n)", "O(log n)", "O(n²)"],
+      "correctAnswer": "O(1)",
+      "explanation": "Arrays provide **direct access** to elements using their index, making it a constant time operation."
+    }
   ],
   "youtubeQueries": [
     { "query": "search query 1", "timestamp": 120 },
@@ -134,6 +149,29 @@ function createBasicChapters(content: string) {
         { question: "What is the main concept of this chapter?", answer: "The main concept is ..." },
         { question: "Explain a key example from this chapter.", answer: "A key example is ..." },
         { question: "List important points to remember from this chapter.", answer: "Important points are ..." }
+      ],
+      practiceQuestions: [
+        {
+          type: "multiple-choice",
+          question: "What is the main topic of this chapter?",
+          options: ["Topic A", "Topic B", "Topic C", "Topic D"],
+          correctAnswer: "Topic A",
+          explanation: "This chapter primarily focuses on **Topic A** as the main concept."
+        },
+        {
+          type: "multiple-choice",
+          question: "Which concept is most important in this chapter?",
+          options: ["Concept X", "Concept Y", "Concept Z", "Concept W"],
+          correctAnswer: "Concept X",
+          explanation: "**Concept X** is the foundational concept that this chapter builds upon."
+        },
+        {
+          type: "multiple-choice",
+          question: "What is the key takeaway from this chapter?",
+          options: ["Takeaway 1", "Takeaway 2", "Takeaway 3", "Takeaway 4"],
+          correctAnswer: "Takeaway 1",
+          explanation: "**Takeaway 1** represents the most important learning outcome from this chapter."
+        }
       ],
       youtubeQueries: [{ query: "example search query", timestamp: 0 }],
       youtubeVideos: []
