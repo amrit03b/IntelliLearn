@@ -22,7 +22,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import SyllabusUploader from "../../components/SyllabusUploader"
-import KnowledgeTree from "../../components/KnowledgeTree"
+import ChapterBreakdown from "../../components/ChapterBreakdown"
 import { db } from "../../firebase/config"
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore"
 
@@ -191,86 +191,50 @@ export default function DashboardPage() {
               <p className="text-slate-600">Ready to continue your learning journey?</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="space-y-8">
               {/* Syllabus Upload Section */}
-              <div className="lg:col-span-2">
+              <div>
                 <SyllabusUploader onSyllabusUploaded={handleSyllabusUploaded} />
               </div>
 
-              {/* Knowledge Tree Visualization */}
-              <div className="space-y-6 mt-8">
-                {syllabusLoading && <div>Loading your syllabuses...</div>}
-                {syllabusError && <div className="text-red-600">{syllabusError}</div>}
+              {/* Chapter Breakdown */}
+              <div className="space-y-6">
+                {syllabusLoading && (
+                  <div className="bg-white rounded-xl border border-slate-200 p-6">
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+                      <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                )}
+                {syllabusError && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                    <div className="text-red-600">{syllabusError}</div>
+                  </div>
+                )}
                 {syllabuses.length === 0 && !syllabusLoading && (
-                  <div className="text-slate-400">No syllabuses uploaded yet.</div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                    <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">No Syllabuses Yet</h3>
+                    <p className="text-slate-600 mb-4">Upload your first syllabus to get started with chapter breakdowns.</p>
+                  </div>
                 )}
                 {syllabuses.map((syllabus) => (
                   <div key={syllabus.id} className="bg-white rounded-xl border border-slate-200 p-6">
-                    <h2 className="text-lg font-semibold text-slate-800 mb-2">
-                      Syllabus ({syllabus.createdAt?.toDate?.().toLocaleString?.() || ""})
-                    </h2>
-                    <div className="mb-2 text-slate-600 text-sm">
-                      {syllabus.syllabusContent?.slice(0, 120)}{syllabus.syllabusContent?.length > 120 ? "..." : ""}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-lg font-semibold text-slate-800">
+                          {syllabus.fileName || "Syllabus"}
+                        </h2>
+                        <p className="text-sm text-slate-500">
+                          {syllabus.createdAt?.toDate?.().toLocaleString?.() || ""}
+                        </p>
+                      </div>
                     </div>
-                    <h3 className="text-md font-semibold text-slate-700 mb-2">Knowledge Tree</h3>
-                    <KnowledgeTree knowledgeTree={syllabus.knowledgeTree} syllabusContent={syllabus.syllabusContent} />
+                    <ChapterBreakdown syllabusContent={syllabus.syllabusContent} />
                   </div>
                 ))}
-              </div>
-
-              {/* AI Insights Panel */}
-              <div className="space-y-6">
-                <div className="bg-white rounded-xl border border-slate-200 p-6">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                    <Lightbulb className="h-5 w-5 text-yellow-500 mr-2" />
-                    AI Insights
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
-                      <FileVideo className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-700">Video Summaries</p>
-                        <p className="text-xs text-slate-500">AI-generated insights</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
-                      <FileText className="h-5 w-5 text-green-600" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-700">Smart Notes</p>
-                        <p className="text-xs text-slate-500">Automated note generation</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
-                      <CreditCard className="h-5 w-5 text-purple-600" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-700">Flashcards</p>
-                        <p className="text-xs text-slate-500">Interactive study cards</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-4 text-center">
-                    AI features will activate once you upload content
-                  </p>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="bg-white rounded-xl border border-slate-200 p-6">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Quick Stats</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Syllabuses</span>
-                      <span className="font-semibold text-slate-800">0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Study Groups</span>
-                      <span className="font-semibold text-slate-800">0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Study Hours</span>
-                      <span className="font-semibold text-slate-800">0h</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
