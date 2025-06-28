@@ -39,7 +39,7 @@ export default function HomePage() {
             IntelliLearn: Master Your Studies, <span className="text-blue-600">Together</span>
           </h1>
           <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto hero-subtitle">
-            Transforming syllabuses into interactive knowledge, powered by AI & enhanced by community.
+            Transforming syllabuses into interactive, AI-powered knowledge — <span className="text-blue-600 font-bold text-2xl">TOGETHER</span> ✨
           </p>
           <Link
             href="/signup"
