@@ -90,6 +90,9 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   const [translating, setTranslating] = useState(false);
   const [translatedChapters, setTranslatedChapters] = useState<{ [lang: string]: Chapter[] }>({});
 
+  const [isPaused, setIsPaused] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   // If chaptersProp changes, update chapters state
   useEffect(() => {
     console.log('ChapterBreakdown received chaptersProp:', chaptersProp)
@@ -387,6 +390,30 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
     setTranslating(false);
   };
 
+  // Track expanded chapters
+  const expandedChapterId = Array.from(expandedChapters)[0];
+  const expandedChapter = chapters.find(ch => ch.id === expandedChapterId);
+
+  // Listen for speechSynthesis events to update button state
+  useEffect(() => {
+    const handlePause = () => setIsPaused(true);
+    const handleResume = () => setIsPaused(false);
+    const handleStart = () => setIsSpeaking(true);
+    const handleEnd = () => { setIsSpeaking(false); setIsPaused(false); };
+    window.speechSynthesis.addEventListener('pause', handlePause);
+    window.speechSynthesis.addEventListener('resume', handleResume);
+    window.speechSynthesis.addEventListener('start', handleStart);
+    window.speechSynthesis.addEventListener('end', handleEnd);
+    window.speechSynthesis.addEventListener('cancel', handleEnd);
+    return () => {
+      window.speechSynthesis.removeEventListener('pause', handlePause);
+      window.speechSynthesis.removeEventListener('resume', handleResume);
+      window.speechSynthesis.removeEventListener('start', handleStart);
+      window.speechSynthesis.removeEventListener('end', handleEnd);
+      window.speechSynthesis.removeEventListener('cancel', handleEnd);
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -437,6 +464,43 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
             ))}
           </select>
           {translating && <span className="ml-2 text-blue-600 text-xs">Translating...</span>}
+          <button
+            type="button"
+            className={`ml-2 px-3 py-1 rounded text-white text-sm transition-colors ${isSpeaking ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
+            onClick={() => {
+              if (!expandedChapter) return;
+              if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                return;
+              }
+              // Gather all English text for the expanded chapter
+              const textToRead = [
+                expandedChapter.title,
+                expandedChapter.explanation,
+                ...(expandedChapter.mostProbableQuestions?.map(q => `${q.question} ${q.answer}`) || [])
+              ].join('. ');
+              window.speechSynthesis.cancel();
+              const utterance = new window.SpeechSynthesisUtterance(textToRead);
+              utterance.lang = 'en-US';
+              window.speechSynthesis.speak(utterance);
+            }}
+          >
+            {isSpeaking ? '⏹ Stop' : '🔊 Speak'}
+          </button>
+          <button
+            type="button"
+            className={`px-3 py-1 rounded text-white text-sm transition-colors ${isPaused ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'}`}
+            onClick={() => {
+              if (isPaused) {
+                window.speechSynthesis.resume();
+              } else {
+                window.speechSynthesis.pause();
+              }
+              setIsPaused(!isPaused);
+            }}
+          >
+            {isPaused ? '▶️ Resume' : '⏸ Pause'}
+          </button>
         </div>
         {((selectedLanguage === 'en' ? chapters : translatedChapters[selectedLanguage]) || []).map((chapter) => (
           <div key={chapter.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden">
