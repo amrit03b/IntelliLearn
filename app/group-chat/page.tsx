@@ -46,6 +46,8 @@ export default function GroupChatPage() {
   const [groupBreakdowns, setGroupBreakdowns] = useState<any[]>([]);
   const [selectedBreakdown, setSelectedBreakdown] = useState<any | null>(null);
   const [pendingLocalBreakdowns, setPendingLocalBreakdowns] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   // Subscribe to all groups (not just where user is a member)
   useEffect(() => {
@@ -199,6 +201,43 @@ export default function GroupChatPage() {
     }
   };
 
+  // Handle joining a group
+  const handleJoinGroup = async (groupId: string) => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, "groups", groupId), {
+        members: arrayUnion(user.uid)
+      });
+      setJoinMessage("Successfully joined the group!");
+      setTimeout(() => setJoinMessage(""), 3000);
+    } catch (err: any) {
+      setJoinMessage("Failed to join group: " + err.message);
+      setTimeout(() => setJoinMessage(""), 3000);
+    }
+  };
+
+  // Send a message to the group
+  const handleSendMessage = async () => {
+    if (!selectedGroupId || !newMessage.trim() || !user || sendingMessage) return;
+    
+    setSendingMessage(true);
+    try {
+      await addDoc(collection(db, "groupMessages"), {
+        groupId: selectedGroupId,
+        userId: user.uid,
+        userName: user.displayName || user.email || "User",
+        content: newMessage.trim(),
+        type: "message",
+        createdAt: serverTimestamp(),
+      });
+      setNewMessage("");
+    } catch (err: any) {
+      console.error("Failed to send message:", err);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!user) return <div className="flex items-center justify-center h-screen text-slate-400">Please log in to use group chat.</div>;
 
@@ -325,6 +364,27 @@ export default function GroupChatPage() {
                   <div className="text-slate-700 whitespace-pre-line">{msg.content}</div>
                 </div>
               ))}
+            </div>
+            
+            {/* Message Input */}
+            <div className="flex items-center space-x-2 mt-4">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type your message..."
+                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={sendingMessage}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || sendingMessage}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                <Send className="h-4 w-4" />
+                <span>{sendingMessage ? "Sending..." : "Send"}</span>
+              </button>
             </div>
           </div>
         ) : (
