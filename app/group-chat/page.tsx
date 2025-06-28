@@ -14,6 +14,7 @@ interface Group {
   members: string[];
   creatorId: string;
   createdAt?: any;
+  pendingInvites?: string[];
 }
 
 interface GroupMessage {
@@ -45,7 +46,6 @@ export default function GroupChatPage() {
   const [topicError, setTopicError] = useState("");
   const [groupBreakdowns, setGroupBreakdowns] = useState<any[]>([]);
   const [selectedBreakdown, setSelectedBreakdown] = useState<any | null>(null);
-  const [pendingLocalBreakdowns, setPendingLocalBreakdowns] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
 
@@ -86,12 +86,12 @@ export default function GroupChatPage() {
       setSelectedGroupId(groupId);
       return;
     }
-    if (group.pendingInvites && group.pendingInvites.includes(user.email?.toLowerCase())) {
+    if (group.pendingInvites && group.pendingInvites.includes(user.email?.toLowerCase() || '')) {
       // Add user to group and remove from pendingInvites
       const update = async () => {
         await updateDoc(doc(db, "groups", groupId), {
           members: arrayUnion(user.uid),
-          pendingInvites: group.pendingInvites.filter((e: string) => e !== user.email?.toLowerCase()),
+          pendingInvites: group.pendingInvites?.filter((e: string) => e !== user.email?.toLowerCase()) || [],
         });
         setJoinMessage("You have joined the group!");
         setSelectedGroupId(groupId);
@@ -105,34 +105,61 @@ export default function GroupChatPage() {
     if (!selectedGroupId) {
       setGroupBreakdowns([]);
       setSelectedBreakdown(null);
-      setPendingLocalBreakdowns([]);
       return;
     }
-    const q = query(
-      collection(db, "groupGeneratedBreakdowns"),
-      where("groupId", "==", selectedGroupId),
-      orderBy("createdAt", "desc")
-    );
-    const unsub = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setGroupBreakdowns(docs);
-      setSelectedBreakdown(docs[0] || null);
-    });
-    return () => unsub();
-  }, [selectedGroupId]);
-
-  // Merge local pending breakdowns after Firestore updates
-  useEffect(() => {
-    if (!selectedGroupId) return;
-    setGroupBreakdowns((prev) => [
-      ...prev,
-      ...pendingLocalBreakdowns.filter(local => !prev.some(doc => doc.topic === local.topic && doc.userId === local.userId))
-    ]);
-    if (!selectedBreakdown && (pendingLocalBreakdowns[0] || groupBreakdowns[0])) {
-      setSelectedBreakdown(pendingLocalBreakdowns[0] || groupBreakdowns[0]);
+    
+    console.log('Setting up listener for group:', selectedGroupId);
+    
+    try {
+      const q = query(
+        collection(db, "groupGeneratedBreakdowns"),
+        where("groupId", "==", selectedGroupId),
+        orderBy("createdAt", "desc")
+      );
+      
+      const unsub = onSnapshot(q, (snapshot) => {
+        const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        console.log('Received breakdowns from Firebase:', docs);
+        setGroupBreakdowns(docs);
+        
+        // Always set the first breakdown as selected when data changes
+        if (docs.length > 0) {
+          setSelectedBreakdown(docs[0]);
+        } else {
+          setSelectedBreakdown(null);
+        }
+      }, (error) => {
+        console.error('Error listening to group breakdowns:', error);
+        // If there's an error, try without orderBy
+        console.log('Trying query without orderBy...');
+        const simpleQ = query(
+          collection(db, "groupGeneratedBreakdowns"),
+          where("groupId", "==", selectedGroupId)
+        );
+        
+        const simpleUnsub = onSnapshot(simpleQ, (snapshot) => {
+          const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          console.log('Received breakdowns (simple query):', docs);
+          setGroupBreakdowns(docs);
+          
+          if (docs.length > 0) {
+            setSelectedBreakdown(docs[0]);
+          } else {
+            setSelectedBreakdown(null);
+          }
+        });
+        
+        return () => simpleUnsub();
+      });
+      
+      return () => {
+        console.log('Cleaning up listener for group:', selectedGroupId);
+        unsub();
+      };
+    } catch (error) {
+      console.error('Error setting up query:', error);
     }
-    // eslint-disable-next-line
-  }, [pendingLocalBreakdowns, selectedGroupId]);
+  }, [selectedGroupId]);
 
   // Create a new group in Firestore
   const handleCreateGroup = async () => {
@@ -155,46 +182,61 @@ export default function GroupChatPage() {
     if (!selectedGroupId || !topicInput.trim() || !user) return;
     setTopicLoading(true);
     setTopicError("");
+    
     try {
+      console.log('Generating content for topic:', topicInput.trim());
+      
       const response = await fetch("/api/generate-knowledge-tree", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ syllabusContent: topicInput.trim() }),
       });
+      
       const data = await response.json();
+      console.log('API response:', data);
+      
       if (data.chapters) {
-        // Show immediately in UI
-        const localBreakdown = {
-          id: `local-${Date.now()}`,
+        // Create the breakdown data
+        const breakdownData = {
           groupId: selectedGroupId,
           userId: user.uid,
           userName: user.displayName || user.email || "User",
           topic: topicInput.trim(),
           breakdown: data.chapters,
-          createdAt: Date.now(),
-          isLocal: true,
-        };
-        setPendingLocalBreakdowns((prev) => [localBreakdown, ...prev]);
-        setSelectedBreakdown(localBreakdown);
-        setTopicInput("");
-        // Save to Firestore in background
-        addDoc(collection(db, "groupGeneratedBreakdowns"), {
-          groupId: selectedGroupId,
-          userId: user.uid,
-          userName: user.displayName || user.email || "User",
-          topic: localBreakdown.topic,
-          breakdown: localBreakdown.breakdown,
           createdAt: serverTimestamp(),
-        }).then(() => {
-          // Remove from pendingLocalBreakdowns after Firestore confirms
-          setPendingLocalBreakdowns((prev) => prev.filter(b => b.id !== localBreakdown.id));
-        }).catch((err) => {
-          setTopicError("Saved locally, but failed to save to group: " + (err.message || "Unknown error"));
-        });
+        };
+        
+        console.log('Saving breakdown to Firebase:', breakdownData);
+        
+        // Save to Firestore first, then update UI
+        const docRef = await addDoc(collection(db, "groupGeneratedBreakdowns"), breakdownData);
+        console.log('Successfully saved to Firebase with ID:', docRef.id);
+        
+        // Clear input after successful save
+        setTopicInput("");
+        
+        // Also add a message to the group chat about the new topic
+        try {
+          await addDoc(collection(db, "groupMessages"), {
+            groupId: selectedGroupId,
+            userId: user.uid,
+            userName: user.displayName || user.email || "User",
+            content: `Generated new topic: "${topicInput.trim()}" with ${data.chapters.length} chapters`,
+            type: "generated-content",
+            createdAt: serverTimestamp(),
+            addedBy: user.displayName || user.email || "User",
+            topic: topicInput.trim(),
+          });
+        } catch (messageErr) {
+          console.error("Failed to add message about new topic:", messageErr);
+        }
+        
       } else {
-        setTopicError(data.error || "Failed to generate content.");
+        console.error('API returned no chapters:', data);
+        setTopicError(data.error || "Failed to generate content. No chapters returned.");
       }
     } catch (err: any) {
+      console.error("Error in handleGenerateTopicContent:", err);
       setTopicError(err.message || "Failed to generate content.");
     } finally {
       setTopicLoading(false);
@@ -244,7 +286,13 @@ export default function GroupChatPage() {
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
   const groupMessages = messages;
 
-  console.log('GroupBreakdowns:', groupBreakdowns, 'SelectedBreakdown:', selectedBreakdown);
+  console.log('Current state:', {
+    selectedGroupId,
+    groupBreakdowns: groupBreakdowns.length,
+    selectedBreakdown: selectedBreakdown?.id,
+    groups: groups.length,
+    messages: messages.length
+  });
 
   return (
     <div className="flex h-screen">
@@ -311,6 +359,7 @@ export default function GroupChatPage() {
           </div>
         )}
         {topicError && <div className="text-red-600 mb-2 text-sm">{topicError}</div>}
+        
         {selectedGroup && groupBreakdowns.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center space-x-2 mb-2">
@@ -321,7 +370,7 @@ export default function GroupChatPage() {
                   className={`px-3 py-1 rounded text-sm border ${selectedBreakdown?.id === b.id ? "bg-blue-100 border-blue-400 text-blue-800 font-semibold" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}`}
                   onClick={() => setSelectedBreakdown(b)}
                 >
-                  {b.topic || `Topic ${idx + 1}`} <span className="text-xs text-slate-400">({b.userName}{b.isLocal ? ' (pending)' : ''})</span>
+                  {b.topic || `Topic ${idx + 1}`} <span className="text-xs text-slate-400">({b.userName})</span>
                 </button>
               ))}
             </div>
@@ -336,11 +385,10 @@ export default function GroupChatPage() {
                             ? selectedBreakdown.createdAt.toDate().toLocaleString()
                             : new Date(selectedBreakdown.createdAt).toLocaleString())
                         : ""}
-                      {selectedBreakdown.isLocal && <span className="ml-2 text-yellow-600">(pending save)</span>}
                     </p>
                   </div>
                 </div>
-                <ChapterBreakdown chapters={Array.isArray(selectedBreakdown.breakdown) ? selectedBreakdown.breakdown : []} key={selectedBreakdown.id} />
+                <ChapterBreakdown chapters={selectedBreakdown.breakdown} key={selectedBreakdown.id} />
               </div>
             )}
           </div>
