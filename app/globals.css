@@ -26,6 +26,12 @@
   }
 }
 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -42,3 +48,164 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-400;
 }
+
+/* IntelliLearn Logo Animations */
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+  }
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes logoGlow {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.1);
+  }
+}
+
+.logo-animation {
+  animation: logoPulse 3s ease-in-out infinite, logoFloat 4s ease-in-out infinite;
+}
+
+.logo-animation:hover {
+  animation: logoGlow 1s ease-in-out infinite;
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+}
+
+.logo-container {
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover {
+  transform: scale(1.05);
+}
+
+/* Text animation for the brand name */
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(37, 99, 235, 0.6);
+  }
+}
+
+.brand-text-animation {
+  animation: textGlow 3s ease-in-out infinite;
+}
+
+.brand-text-animation:hover {
+  animation: textGlow 1s ease-in-out infinite;
+}
+
+/* Hero section animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero-title {
+  animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.hero-button {
+  animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+.hero-illustration {
+  animation: bounceIn 1.2s ease-out 0.9s both;
+}
+
+.feature-card {
+  animation: fadeInUp 0.8s ease-out;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Stagger animation for feature cards */
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
+.feature-card:nth-child(4) { animation-delay: 0.4s; }

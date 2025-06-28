@@ -1,30 +1,34 @@
-# Synergylearn frontend
+# IntelliLearn
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+A modern learning platform built with Next.js, TypeScript, and Tailwind CSS.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/amrit-codes/v0-synergylearn-frontend)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/h5B1kqIcJaV)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Famrit-codes%2Fv0-intellilearn-frontend)
 
-## Overview
+## Features
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+- Modern UI with Tailwind CSS
+- TypeScript for type safety
+- Next.js 14 with App Router
+- Responsive design
+- Authentication system
+- Knowledge tree visualization
+- YouTube suggestions integration
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Run the development server: `npm run dev`
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Deployment
 
-Your project is live at:
+**[https://vercel.com/amrit-codes/v0-intellilearn-frontend](https://vercel.com/amrit-codes/v0-intellilearn-frontend)**
 
-**[https://vercel.com/amrit-codes/v0-synergylearn-frontend](https://vercel.com/amrit-codes/v0-synergylearn-frontend)**
+## Tech Stack
 
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/h5B1kqIcJaV](https://v0.dev/chat/projects/h5B1kqIcJaV)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- Firebase
+- Shadcn/ui components

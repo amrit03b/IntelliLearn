@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { Brain, Eye, EyeOff } from "lucide-react"
+import { Brain, Eye, EyeOff, BookOpen } from "lucide-react"
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { auth } from "../../firebase/config"
 import { useRouter } from "next/navigation"
@@ -41,8 +41,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
-            <Brain className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-slate-800">SynergyLearn AI</span>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center logo-animation">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-slate-800 brand-text-animation">IntelliLearn</span>
           </Link>
         </div>
 

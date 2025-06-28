@@ -9,8 +9,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <Brain className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-slate-800">SynergyLearn AI</span>
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center logo-animation">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-slate-800 brand-text-animation">IntelliLearn</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -33,15 +35,15 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-800 mb-6">
-            SynergyLearn AI: Master Your Studies, <span className="text-blue-600">Together</span>
+          <h1 className="text-4xl md:text-6xl font-bold text-center text-slate-900 mb-6 hero-title">
+            IntelliLearn: Master Your Studies, <span className="text-blue-600">Together</span>
           </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto hero-subtitle">
             Transforming syllabuses into interactive knowledge, powered by AI & enhanced by community.
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+            className="inline-flex items-center bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl hero-button"
           >
             Get Started
             <ArrowRight className="ml-2 h-5 w-5" />
@@ -50,7 +52,7 @@ export default function HomePage() {
 
         {/* Hero Illustration */}
         <div className="mt-16 flex justify-center">
-          <div className="relative">
+          <div className="relative hero-illustration">
             <div className="w-64 h-64 bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
               <div className="relative">
                 <Brain className="h-24 w-24 text-blue-600" />
@@ -66,7 +68,7 @@ export default function HomePage() {
       {/* Feature Highlights */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow feature-card">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
               <Brain className="h-6 w-6 text-blue-600" />
             </div>
@@ -74,7 +76,7 @@ export default function HomePage() {
             <p className="text-slate-600">Transform your syllabus into interactive, visual knowledge structures.</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow feature-card">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
               <Video className="h-6 w-6 text-green-600" />
             </div>
@@ -82,7 +84,7 @@ export default function HomePage() {
             <p className="text-slate-600">Get AI-generated summaries and key insights from educational videos.</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow feature-card">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
               <Users className="h-6 w-6 text-purple-600" />
             </div>
@@ -90,7 +92,7 @@ export default function HomePage() {
             <p className="text-slate-600">Study together with peers in shared, interactive learning environments.</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow feature-card">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
               <BookOpen className="h-6 w-6 text-orange-600" />
             </div>

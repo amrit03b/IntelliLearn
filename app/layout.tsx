@@ -7,8 +7,8 @@ import { AuthProvider } from "../contexts/AuthContext"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SynergyLearn AI - Master Your Studies, Together",
-  description: "Transforming syllabuses into interactive knowledge, powered by AI & enhanced by community.",
+  title: "IntelliLearn - Master Your Studies, Together",
+  description: "A modern learning platform that helps you master your studies with AI-powered tools and collaborative features.",
   keywords: "AI learning, collaborative study, knowledge trees, educational technology",
     generator: 'v0.dev'
 }
