@@ -80,27 +80,37 @@ export default function SyllabusUploader({ onSyllabusUploaded }: SyllabusUploade
     setUploadSuccess("");
 
     try {
-      // Save to Firestore
-      await addDoc(collection(db, "syllabuses"), {
+      // 1. Generate breakdown from API
+      const response = await fetch("/api/generate-knowledge-tree", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ syllabusContent: syllabusText }),
+      });
+      const data = await response.json();
+      if (!data.chapters) {
+        setUploadError("Failed to generate chapter breakdown.");
+        setUploading(false);
+        return;
+      }
+
+      // 2. Save to Firestore
+      await addDoc(collection(db, "syllabusBreakdowns"), {
         userId: user.uid,
         syllabusContent: syllabusText,
-        fileName: selectedFile?.name || "Pasted Text",
+        breakdown: data.chapters,
+        title: data.chapters[0]?.title || "Untitled Syllabus",
         createdAt: serverTimestamp(),
       });
 
-      setUploadSuccess("Syllabus uploaded successfully! Chapter breakdown will be generated automatically.");
-      
-      // Clear form
+      setUploadSuccess("Syllabus and breakdown saved! You can find it in Past Chats.");
       setSelectedFile(null);
       setPastedText("");
       setSyllabusText("");
-      
-      // Notify parent component
       if (onSyllabusUploaded) {
         onSyllabusUploaded();
       }
     } catch (err: any) {
-      setUploadError(err.message || "Failed to upload syllabus.");
+      setUploadError(err.message || "Failed to upload syllabus and breakdown.");
     } finally {
       setUploading(false);
     }

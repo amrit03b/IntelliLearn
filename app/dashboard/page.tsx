@@ -36,6 +36,10 @@ export default function DashboardPage() {
   const [syllabusLoading, setSyllabusLoading] = useState(false)
   const [syllabusError, setSyllabusError] = useState("")
   const [refresh, setRefresh] = useState(0)
+  const [breakdowns, setBreakdowns] = useState<any[]>([])
+  const [selectedBreakdown, setSelectedBreakdown] = useState<any | null>(null)
+  const [loadingBreakdowns, setLoadingBreakdowns] = useState(false)
+  const [breakdownError, setBreakdownError] = useState("")
 
   useEffect(() => {
     if (!loading && !user) {
@@ -64,6 +68,38 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading && user) {
       fetchSyllabuses(user.uid)
+    }
+  }, [user, loading, refresh])
+
+  // Fetch all syllabusBreakdowns for the user
+  const fetchBreakdowns = async (uid: string) => {
+    setLoadingBreakdowns(true)
+    setBreakdownError("")
+    try {
+      const q = query(
+        collection(db, "syllabusBreakdowns"),
+        where("userId", "==", uid),
+        orderBy("createdAt", "desc")
+      )
+      const querySnapshot = await getDocs(q)
+      const docs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      setBreakdowns(docs)
+      if (docs.length > 0) {
+        setSelectedBreakdown(docs[0])
+      } else {
+        setSelectedBreakdown(null)
+      }
+    } catch (err: any) {
+      console.error(err);
+      setBreakdownError(err.message || "Failed to fetch past chats.")
+    } finally {
+      setLoadingBreakdowns(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && user) {
+      fetchBreakdowns(user.uid)
     }
   }, [user, loading, refresh])
 
@@ -149,38 +185,32 @@ export default function DashboardPage() {
       </header>
 
       <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-slate-200 min-h-screen">
-          <nav className="p-6">
-            <div className="space-y-2">
-              <button className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 w-full text-left">
-                <Home className="h-5 w-5" />
-                <span>Dashboard</span>
-              </button>
-              <button className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 w-full text-left">
-                <FileText className="h-5 w-5" />
-                <span>My Syllabuses</span>
-              </button>
-              <button className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 w-full text-left">
-                <Search className="h-5 w-5" />
-                <span>Explore Topics</span>
-              </button>
-            </div>
-
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">My Study Groups</h3>
-                <button className="text-blue-600 hover:text-blue-700">
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No groups yet</p>
-                <button className="mt-2 text-sm text-blue-600 hover:text-blue-700">Create New Group</button>
-              </div>
-            </div>
-          </nav>
+        {/* Sidebar: Past Chats */}
+        <aside className="w-72 bg-white border-r border-slate-200 min-h-screen flex flex-col">
+          <div className="p-6 border-b border-slate-100">
+            <h3 className="text-md font-semibold text-slate-700 mb-4">Past Chats</h3>
+            {loadingBreakdowns ? (
+              <div className="text-slate-400">Loading...</div>
+            ) : breakdownError ? (
+              <div className="text-red-600">{breakdownError}</div>
+            ) : breakdowns.length === 0 ? (
+              <div className="text-slate-400">No past chats yet.</div>
+            ) : (
+              <ul className="space-y-2">
+                {breakdowns.map((b) => (
+                  <li key={b.id}>
+                    <button
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedBreakdown?.id === b.id ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-50 text-slate-700"}`}
+                      onClick={() => setSelectedBreakdown(b)}
+                    >
+                      <div className="truncate font-medium">{b.title}</div>
+                      <div className="text-xs text-slate-400 truncate">{b.createdAt?.toDate?.().toLocaleString?.() || ""}</div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -198,44 +228,27 @@ export default function DashboardPage() {
               </div>
 
               {/* Chapter Breakdown */}
-              <div className="space-y-6">
-                {syllabusLoading && (
-                  <div className="bg-white rounded-xl border border-slate-200 p-6">
-                    <div className="animate-pulse space-y-4">
-                      <div className="h-4 bg-slate-200 rounded w-1/4"></div>
-                      <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                      <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+              {selectedBreakdown ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-800">
+                        {selectedBreakdown.title || "Syllabus"}
+                      </h2>
+                      <p className="text-sm text-slate-500">
+                        {selectedBreakdown.createdAt?.toDate?.().toLocaleString?.() || ""}
+                      </p>
                     </div>
                   </div>
-                )}
-                {syllabusError && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-                    <div className="text-red-600">{syllabusError}</div>
-                  </div>
-                )}
-                {syllabuses.length === 0 && !syllabusLoading && (
-                  <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-                    <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-800 mb-2">No Syllabuses Yet</h3>
-                    <p className="text-slate-600 mb-4">Upload your first syllabus to get started with chapter breakdowns.</p>
-                  </div>
-                )}
-                {syllabuses.map((syllabus) => (
-                  <div key={syllabus.id} className="bg-white rounded-xl border border-slate-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h2 className="text-lg font-semibold text-slate-800">
-                          {syllabus.fileName || "Syllabus"}
-                        </h2>
-                        <p className="text-sm text-slate-500">
-                          {syllabus.createdAt?.toDate?.().toLocaleString?.() || ""}
-                        </p>
-                      </div>
-                    </div>
-                    <ChapterBreakdown syllabusContent={syllabus.syllabusContent} />
-                  </div>
-                ))}
-              </div>
+                  <ChapterBreakdown chapters={selectedBreakdown.breakdown} key={selectedBreakdown.id} />
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                  <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">No Syllabus Selected</h3>
+                  <p className="text-slate-600 mb-4">Select a past chat or upload a new syllabus to get started.</p>
+                </div>
+              )}
             </div>
           </div>
         </main>

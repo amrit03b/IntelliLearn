@@ -10,7 +10,8 @@ interface Chapter {
 }
 
 interface ChapterBreakdownProps {
-  syllabusContent: string;
+  syllabusContent?: string;
+  chapters?: Chapter[];
 }
 
 // Helper to render **bold** text as <strong>
@@ -24,17 +25,34 @@ function renderWithBold(text: string) {
   });
 }
 
-const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent }) => {
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, chapters: chaptersProp }) => {
+  const [chapters, setChapters] = useState<Chapter[]>(chaptersProp || []);
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
   const [showAnswers, setShowAnswers] = useState<{ [key: string]: boolean[] }>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // If chaptersProp changes, update chapters state
   useEffect(() => {
-    if (syllabusContent) {
+    if (chaptersProp) {
+      setChapters(chaptersProp);
+      // Initialize showAnswers state for each chapter
+      const initialShowAnswers: { [key: string]: boolean[] } = {};
+      chaptersProp.forEach((chapter: Chapter) => {
+        initialShowAnswers[chapter.id] = Array(chapter.mostProbableQuestions.length).fill(false);
+      });
+      setShowAnswers(initialShowAnswers);
+      setLoading(false);
+      setError("");
+    }
+  }, [chaptersProp]);
+
+  // If no chaptersProp, generate from syllabusContent
+  useEffect(() => {
+    if (!chaptersProp && syllabusContent) {
       generateChapters();
     }
+    // eslint-disable-next-line
   }, [syllabusContent]);
 
   const generateChapters = async () => {
@@ -56,12 +74,12 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent }) 
         });
         setShowAnswers(initialShowAnswers);
       } else {
-        const basicChapters = createBasicChapters(syllabusContent);
+        const basicChapters = createBasicChapters(syllabusContent || "");
         setChapters(basicChapters);
       }
     } catch (err: any) {
       setError(err.message || "Failed to generate chapters.");
-      const basicChapters = createBasicChapters(syllabusContent);
+      const basicChapters = createBasicChapters(syllabusContent || "");
       setChapters(basicChapters);
     } finally {
       setLoading(false);
