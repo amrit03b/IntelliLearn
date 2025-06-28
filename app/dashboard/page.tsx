@@ -31,7 +31,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [syllabuses, setSyllabuses] = useState<any[]>([])
   const [syllabusLoading, setSyllabusLoading] = useState(false)
   const [syllabusError, setSyllabusError] = useState("")
@@ -116,24 +115,24 @@ export default function DashboardPage() {
   if (loading) return <div>Loading...</div>
   if (!user) return null
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-    }
-  }
+  // const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0]
+  //   if (file) {
+  //     setSelectedFile(file)
+  //   }
+  // }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
+  // const handleDragOver = (e: React.DragEvent) => {
+  //   e.preventDefault()
+  // }
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file) {
-      setSelectedFile(file)
-    }
-  }
+  // const handleDrop = (e: React.DragEvent) => {
+  //   e.preventDefault()
+  //   const file = e.dataTransfer.files[0]
+  //   if (file) {
+  //     setSelectedFile(file)
+  //   }
+  // }
 
   // Get user display name or fallback to email
   const displayName = user?.displayName || user?.email?.split("@")[0] || "User";

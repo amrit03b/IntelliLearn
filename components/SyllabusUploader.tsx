@@ -11,54 +11,54 @@ interface SyllabusUploaderProps {
 
 export default function SyllabusUploader({ onSyllabusUploaded }: SyllabusUploaderProps) {
   const { user } = useAuth();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pastedText, setPastedText] = useState("");
   const [syllabusText, setSyllabusText] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPastedText("");
-      setUploadError("");
-      setUploadSuccess("");
+  // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setSelectedFile(file);
+  //     setPastedText("");
+  //     setUploadError("");
+  //     setUploadSuccess("");
       
-      // Extract text from file
-      let text = "";
-      try {
-        if (file.type === "application/pdf") {
-          const pdfjsLib = await import("pdfjs-dist/build/pdf");
-          (pdfjsLib as any).GlobalWorkerOptions.workerSrc =
-            `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            text += content.items.map((item: any) => item.str).join(" ") + "\n";
-          }
-        } else if (file.type.startsWith("image/")) {
-          const Tesseract = (await import("tesseract.js")).default;
-          const { data } = await Tesseract.recognize(file, "eng");
-          text = data.text;
-        } else {
-          setUploadError("Unsupported file type. Please upload a PDF or image.");
-          return;
-        }
-        setSyllabusText(text);
-        setUploadSuccess("Syllabus text extracted successfully!");
-      } catch (err: any) {
-        setUploadError(err.message || "Failed to extract text from file.");
-      }
-    }
-  };
+  //     // Extract text from file
+  //     let text = "";
+  //     try {
+  //       if (file.type === "application/pdf") {
+  //         const pdfjsLib = await import("pdfjs-dist/build/pdf");
+  //         (pdfjsLib as any).GlobalWorkerOptions.workerSrc =
+  //           `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+  //         const arrayBuffer = await file.arrayBuffer();
+  //         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  //         for (let i = 1; i <= pdf.numPages; i++) {
+  //           const page = await pdf.getPage(i);
+  //           const content = await page.getTextContent();
+  //           text += content.items.map((item: any) => item.str).join(" ") + "\n";
+  //         }
+  //       } else if (file.type.startsWith("image/")) {
+  //         const Tesseract = (await import("tesseract.js")).default;
+  //         const { data } = await Tesseract.recognize(file, "eng");
+  //         text = data.text;
+  //       } else {
+  //         setUploadError("Unsupported file type. Please upload a PDF or image.");
+  //         return;
+  //       }
+  //       setSyllabusText(text);
+  //       setUploadSuccess("Syllabus text extracted successfully!");
+  //     } catch (err: any) {
+  //       setUploadError(err.message || "Failed to extract text from file.");
+  //     }
+  //   }
+  // };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPastedText(e.target.value);
-    setSelectedFile(null);
+    // setSelectedFile(null);
     setUploadError("");
     setUploadSuccess("");
     setSyllabusText(e.target.value);
@@ -103,7 +103,7 @@ export default function SyllabusUploader({ onSyllabusUploaded }: SyllabusUploade
       });
 
       setUploadSuccess("Syllabus and breakdown saved! You can find it in Past Chats.");
-      setSelectedFile(null);
+      // setSelectedFile(null);
       setPastedText("");
       setSyllabusText("");
       if (onSyllabusUploaded) {
@@ -124,8 +124,8 @@ export default function SyllabusUploader({ onSyllabusUploaded }: SyllabusUploade
       </div>
       
       <div className="space-y-4">
-        {/* File Upload */}
-        <div>
+        {/* File Upload - Commented out for now */}
+        {/* <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             Upload File (PDF or Image)
           </label>
@@ -137,17 +137,17 @@ export default function SyllabusUploader({ onSyllabusUploaded }: SyllabusUploade
           />
         </div>
 
-        <div className="text-center text-slate-500">or</div>
+        <div className="text-center text-slate-500">or</div> */}
 
         {/* Text Input */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
-            Paste Syllabus Text
+            Enter Syllabus Text
           </label>
           <textarea
             value={pastedText}
             onChange={handleTextChange}
-            placeholder="Paste your syllabus content here..."
+            placeholder="Enter your syllabus content here..."
             rows={6}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
@@ -162,12 +162,12 @@ export default function SyllabusUploader({ onSyllabusUploaded }: SyllabusUploade
           {uploading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>Uploading Syllabus...</span>
+              <span>Processing Syllabus...</span>
             </>
           ) : (
             <>
               <FileText className="h-4 w-4" />
-              <span>Upload Syllabus</span>
+              <span>Process Syllabus</span>
             </>
           )}
         </button>
