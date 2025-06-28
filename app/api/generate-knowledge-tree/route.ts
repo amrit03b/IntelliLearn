@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed to call Gemini API" }, { status: 500 });
   }
-}
+} 
 
 function createBasicChapters(content: string) {
   const paragraphs = content.split('\n\n').filter(p => p.trim().length > 50);

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -220,4 +222,12 @@ html, body {
   font-family: "Libertinus Math", system-ui, serif;
   font-weight: 400;
   font-style: normal;
+}
+
+.hindi-font {
+  font-family: 'Noto Sans Devanagari', 'Noto Sans', Arial, sans-serif;
+  font-size: 1.15rem;
+  line-height: 2;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
