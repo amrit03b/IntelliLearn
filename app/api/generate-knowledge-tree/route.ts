@@ -122,6 +122,42 @@ function createBasicChapters(content: string) {
   paragraphs.forEach((paragraph, index) => {
     const lines = paragraph.split('\n');
     const title = lines[0].replace(/^[0-9]+\.?\s*/, '').trim() || `Chapter ${index + 1}`;
-    
     chapters.push({
-      id: `
+      id: `chapter-${index + 1}`,
+      title,
+      explanation: paragraph,
+      mostProbableQuestions: [
+        { question: "What is the main concept of this chapter?", answer: "The main concept is ..." },
+        { question: "Explain a key example from this chapter.", answer: "A key example is ..." },
+        { question: "List important points to remember from this chapter.", answer: "Important points are ..." }
+      ],
+      practiceQuestions: [
+        {
+          type: "multiple-choice",
+          question: "What is the main topic of this chapter?",
+          options: ["Topic A", "Topic B", "Topic C", "Topic D"],
+          correctAnswer: "Topic A",
+          explanation: "This chapter primarily focuses on **Topic A** as the main concept."
+        },
+        {
+          type: "multiple-choice",
+          question: "Which concept is most important in this chapter?",
+          options: ["Concept X", "Concept Y", "Concept Z", "Concept W"],
+          correctAnswer: "Concept X",
+          explanation: "**Concept X** is the foundational concept that this chapter builds upon."
+        },
+        {
+          type: "multiple-choice",
+          question: "What is the key takeaway from this chapter?",
+          options: ["Takeaway 1", "Takeaway 2", "Takeaway 3", "Takeaway 4"],
+          correctAnswer: "Takeaway 1",
+          explanation: "**Takeaway 1** represents the most important learning outcome from this chapter."
+        }
+      ],
+      youtubeQueries: [{ query: "example search query", timestamp: 0 }],
+      youtubeVideos: []
+    });
+  });
+
+  return chapters.slice(0, 10);
+}

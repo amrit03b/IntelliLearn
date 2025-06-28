@@ -215,11 +215,20 @@ export default function DashboardPage() {
                     >
                       <div className="truncate font-medium">{b.title}</div>
                       <div className="text-xs text-slate-400 truncate">{b.createdAt?.toDate?.().toLocaleString?.() || ""}</div>
-                    </button>
+              </button>
                   </li>
                 ))}
               </ul>
             )}
+            </div>
+          <div className="flex flex-col space-y-2">
+            <button
+              className="flex items-center px-4 py-2 rounded hover:bg-blue-100 text-blue-700 font-medium transition-colors"
+              onClick={() => router.push('/group-chat')}
+            >
+              <Users className="h-5 w-5 mr-2" />
+              Group
+            </button>
           </div>
         </aside>
 
@@ -241,7 +250,7 @@ export default function DashboardPage() {
               {selectedBreakdown ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div>
+                      <div>
                       <h2 className="text-lg font-semibold text-slate-800">
                         {selectedBreakdown.title || "Syllabus"}
                       </h2>

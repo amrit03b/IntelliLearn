@@ -1,5 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronDown, ChevronRight, BookOpen, FileText, HelpCircle, Eye, EyeOff, Play } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 
 interface Chapter {
   id: string;
@@ -13,7 +22,8 @@ interface Chapter {
     correctAnswer: string;
     explanation: string;
   }[];
-  youtubeVideos?: { title: string; url: string; thumbnail?: string | null; timestamp?: number };
+  youtubeVideos?: { title: string; url: string; thumbnail?: string | null; timestamp?: number }[];
+  youtubeQueries?: { query: string; timestamp: number }[];
 }
 
 interface ChapterBreakdownProps {
@@ -39,6 +49,14 @@ function formatSeconds(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+// Add Note type
+interface Note {
+  text: string;
+  chapterId: string;
+  chapterTitle: string;
+  createdAt: number;
+}
+
 const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, chapters: chaptersProp }) => {
   const [chapters, setChapters] = useState<Chapter[]>(chaptersProp || []);
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
@@ -53,6 +71,13 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   const [quizScores, setQuizScores] = useState<{ [key: string]: { correct: number; total: number } }>({});
 
   const [quizLoading, setQuizLoading] = useState<{ [key: string]: boolean }>({});
+
+  const [selectionInfo, setSelectionInfo] = useState<{ text: string; x: number; y: number; chapterId: string } | null>(null);
+  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const explanationRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const [notes, setNotes] = useState<Note[]>([]);
 
   // If chaptersProp changes, update chapters state
   useEffect(() => {
@@ -109,10 +134,11 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
     }
   };
 
-  const createBasicChapters = (content: string): Chapter[] => {
-    const paragraphs = content.split('\n\n').filter(p => p.trim().length > 50);
+  function createBasicChapters(content: string): Chapter[] {
+    const paragraphs = content.split('\n\n').filter((p: string) => p.trim().length > 50);
     const chapters: Chapter[] = [];
-    paragraphs.forEach((paragraph, index) => {
+    
+    paragraphs.forEach((paragraph: string, index: number) => {
       const lines = paragraph.split('\n');
       const title = lines[0].replace(/^[0-9]+\.?\s*/, '').trim() || `Chapter ${index + 1}`;
       chapters.push({
@@ -147,11 +173,13 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
             explanation: "**Takeaway 1** represents the most important learning outcome from this chapter."
           }
         ],
+        youtubeQueries: [{ query: "example search query", timestamp: 0 }],
         youtubeVideos: []
       });
     });
+
     return chapters.slice(0, 10);
-  };
+  }
 
   const toggleChapter = (chapterId: string) => {
     const newExpanded = new Set(expandedChapters);
@@ -241,6 +269,54 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
     }
   }, [syllabusContent]);
 
+  // Handler for text selection in explanation
+  const handleMouseUp = (chapterId: string) => {
+    const sel = window.getSelection();
+    if (sel && sel.toString().trim().length > 0) {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      setSelectionInfo({
+        text: sel.toString(),
+        x: rect.right + window.scrollX,
+        y: rect.bottom + window.scrollY,
+        chapterId,
+      });
+      setNoteText(sel.toString());
+    } else {
+      setSelectionInfo(null);
+    }
+  };
+
+  // Handler for clicking 'Add' button
+  const handleAddNoteClick = () => {
+    setShowAddNoteModal(true);
+    setSelectionInfo(null);
+  };
+
+  // Handler for closing modal
+  const handleCloseModal = () => {
+    setShowAddNoteModal(false);
+    setNoteText("");
+  };
+
+  // Handler for confirming add note
+  const handleConfirmAddNote = () => {
+    if (noteText.trim() && selectionInfo) {
+      const chapter = chapters.find(c => c.id === selectionInfo.chapterId);
+      setNotes(prev => [
+        ...prev,
+        {
+          text: noteText.trim(),
+          chapterId: selectionInfo.chapterId,
+          chapterTitle: chapter?.title || '',
+          createdAt: Date.now(),
+        },
+      ]);
+    }
+    setShowAddNoteModal(false);
+    setNoteText("");
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -302,10 +378,72 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                   <FileText className="h-4 w-4 text-blue-600" />
                   <span>Detailed Explanation</span>
                 </h5>
-                <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-line">
+                <div
+                  className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-line relative"
+                  ref={el => { explanationRefs.current[chapter.id] = el; }}
+                  onMouseUp={() => handleMouseUp(chapter.id)}
+                  style={{ userSelect: 'text', cursor: 'text' }}
+                >
                   {renderWithBold(chapter.explanation)}
+                  {/* Floating Add button */}
+                  {selectionInfo && selectionInfo.chapterId === chapter.id && (
+                    <button
+                      style={{
+                        position: 'absolute',
+                        left: selectionInfo.x - (explanationRefs.current[chapter.id]?.getBoundingClientRect().left || 0),
+                        top: selectionInfo.y - (explanationRefs.current[chapter.id]?.getBoundingClientRect().top || 0) + 8,
+                        zIndex: 10,
+                        background: '#2563eb',
+                        color: 'white',
+                        borderRadius: 6,
+                        padding: '2px 10px',
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        fontSize: 12,
+                        cursor: 'pointer',
+                      }}
+                      onClick={handleAddNoteClick}
+                    >
+                      Add
+                    </button>
+                  )}
                 </div>
               </div>
+              {/* Add Note Modal */}
+              {showAddNoteModal && (
+                <Dialog open={showAddNoteModal} onOpenChange={setShowAddNoteModal}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add to Notes</DialogTitle>
+                      <DialogDescription>
+                        You can edit the selected text before adding it to your notes.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <textarea
+                      className="w-full border border-slate-300 rounded p-2 mb-4"
+                      rows={3}
+                      value={noteText}
+                      onChange={e => setNoteText(e.target.value)}
+                    />
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <button
+                          className="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300"
+                          onClick={handleCloseModal}
+                        >
+                          Cancel
+                        </button>
+                      </DialogClose>
+                      <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        onClick={handleConfirmAddNote}
+                      >
+                        Add Note
+                      </button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
               {/* Most Probable Exam Questions */}
               {chapter.mostProbableQuestions && chapter.mostProbableQuestions.length > 0 && (
                 <div>
@@ -344,7 +482,7 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                     <span>Suggested YouTube Videos</span>
                   </h5>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {chapter.youtubeVideos.map((video, idx) => (
+                    {chapter.youtubeVideos.map((video: { title: string; url: string; thumbnail?: string | null; timestamp?: number }, idx: number) => (
                       <a
                         key={idx}
                         href={video.url}
@@ -462,6 +600,19 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
           )}
         </div>
       ))}
+      {notes.length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-8">
+          <h4 className="text-lg font-semibold text-yellow-800 mb-3">My Notes</h4>
+          <ul className="space-y-2">
+            {notes.map((note, idx) => (
+              <li key={note.createdAt + '-' + idx} className="bg-white border border-yellow-100 rounded p-3">
+                <div className="text-slate-800 mb-1">{note.text}</div>
+                <div className="text-xs text-slate-500">From: <span className="font-medium">{note.chapterTitle}</span></div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
