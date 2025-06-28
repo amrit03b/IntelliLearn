@@ -60,8 +60,7 @@ interface Note {
 const languages = [
   { code: "en", label: "English" },
   { code: "hi", label: "Hindi" },
-  { code: "es", label: "Spanish" },
-  { code: "fr", label: "French" },
+  { code: "bn", label: "Bengali" },
   // ...add more as needed
 ];
 
@@ -330,36 +329,43 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   };
 
   // Translation logic
+  const translate = async (text: string, type: string, targetLang: string) => {
+    if (!text) return "";
+    let prompt = "";
+    if (type === "title") prompt = `Translate this heading to ${targetLang}: ${text}`;
+    else if (type === "explanation") prompt = `Translate this explanation to ${targetLang}: ${text}`;
+    else if (type === "question") prompt = `Translate this question to ${targetLang}: ${text}`;
+    else if (type === "answer") prompt = `Translate this answer to ${targetLang}: ${text}`;
+    else prompt = `Translate the following text to ${targetLang}: ${text}`;
+    const res = await fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, targetLang, prompt }),
+    });
+    const data = await res.json();
+    // Take only the first line if Gemini returns extra text
+    return (data.translatedText || text).split('\n')[0];
+  };
+
   const translateChapter = async (chapter: Chapter, targetLang: string): Promise<Chapter> => {
-    // Translate all fields that are shown to the user
-    const translate = async (text: string) => {
-      if (!text) return "";
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, targetLang }),
-      });
-      const data = await res.json();
-      return data.translatedText || text;
-    };
     return {
       ...chapter,
-      title: await translate(chapter.title),
-      explanation: await translate(chapter.explanation),
+      title: await translate(chapter.title, "title", targetLang),
+      explanation: await translate(chapter.explanation, "explanation", targetLang),
       mostProbableQuestions: await Promise.all(
         chapter.mostProbableQuestions.map(async (q) => ({
-          question: await translate(q.question),
-          answer: await translate(q.answer),
+          question: await translate(q.question, "question", targetLang),
+          answer: await translate(q.answer, "answer", targetLang),
         }))
       ),
       practiceQuestions: chapter.practiceQuestions
         ? await Promise.all(
             chapter.practiceQuestions.map(async (q) => ({
               ...q,
-              question: await translate(q.question),
-              options: await Promise.all(q.options.map(translate)),
-              correctAnswer: await translate(q.correctAnswer),
-              explanation: await translate(q.explanation),
+              question: await translate(q.question, "question", targetLang),
+              options: await Promise.all(q.options.map(opt => translate(opt, "question", targetLang))),
+              correctAnswer: await translate(q.correctAnswer, "answer", targetLang),
+              explanation: await translate(q.explanation, "answer", targetLang),
             }))
           )
         : undefined,
@@ -411,7 +417,7 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   }
 
   return (
-    <div className={selectedLanguage === 'hi' ? 'hindi-font' : ''}>
+    <div className={selectedLanguage === 'hi' ? 'hindi-font' : selectedLanguage === 'bn' ? 'bengali-font' : ''}>
       <div className="space-y-4">
         <div className="flex items-center space-x-2 mb-6">
           <BookOpen className="h-5 w-5 text-blue-600" />
