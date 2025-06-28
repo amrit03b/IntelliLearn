@@ -83,8 +83,10 @@ export default function DashboardPage() {
       )
       const querySnapshot = await getDocs(q)
       const docs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      console.log('Fetched breakdowns:', docs)
       setBreakdowns(docs)
       if (docs.length > 0) {
+        console.log('Setting selected breakdown:', docs[0])
         setSelectedBreakdown(docs[0])
       } else {
         setSelectedBreakdown(null)
@@ -102,6 +104,14 @@ export default function DashboardPage() {
       fetchBreakdowns(user.uid)
     }
   }, [user, loading, refresh])
+
+  // Debug logging for selectedBreakdown
+  useEffect(() => {
+    if (selectedBreakdown) {
+      console.log('Selected breakdown:', selectedBreakdown)
+      console.log('Breakdown chapters:', selectedBreakdown.breakdown)
+    }
+  }, [selectedBreakdown])
 
   if (loading) return <div>Loading...</div>
   if (!user) return null

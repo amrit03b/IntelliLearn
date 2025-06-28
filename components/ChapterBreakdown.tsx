@@ -6,7 +6,7 @@ interface Chapter {
   title: string;
   explanation: string;
   mostProbableQuestions: { question: string; answer: string }[];
-  youtubeVideos?: { title: string; url: string; thumbnail?: string | null }[];
+  youtubeVideos?: { title: string; url: string; thumbnail?: string | null; timestamp?: number };
 }
 
 interface ChapterBreakdownProps {
@@ -25,6 +25,13 @@ function renderWithBold(text: string) {
   });
 }
 
+// Helper to format seconds as m:ss
+function formatSeconds(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, chapters: chaptersProp }) => {
   const [chapters, setChapters] = useState<Chapter[]>(chaptersProp || []);
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
@@ -34,6 +41,7 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
 
   // If chaptersProp changes, update chapters state
   useEffect(() => {
+    console.log('ChapterBreakdown received chaptersProp:', chaptersProp)
     if (chaptersProp) {
       setChapters(chaptersProp);
       // Initialize showAnswers state for each chapter
@@ -239,7 +247,12 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                         {video.thumbnail && (
                           <img src={video.thumbnail} alt={video.title} className="w-16 h-10 object-cover rounded" />
                         )}
-                        <span className="text-blue-700 font-medium line-clamp-2">{video.title}</span>
+                        <div>
+                          <span className="text-blue-700 font-medium line-clamp-2">{video.title}</span>
+                          {video.timestamp && (
+                            <div className="text-xs text-slate-500 mt-1">Watch from {formatSeconds(video.timestamp)}</div>
+                          )}
+                        </div>
                       </a>
                     ))}
                   </div>

@@ -31,7 +31,9 @@ For each chapter, provide:
 3. At the end of each chapter, add a section called "Most Probable Exam Questions" as an array of 3-5 objects. Each object should have:
    - question: the exam question (plain text)
    - answer: a detailed, exam-oriented answer (plain text, you may use double asterisks (**) for bold, but no other markdown/HTML)
-4. Also provide a youtubeQueries array (2-3 search queries for relevant YouTube videos for this chapter, not links, just search terms)
+4. Also provide a youtubeQueries array (2-3 objects). Each object should have:
+   - query: a search query for a relevant YouTube video for this chapter
+   - timestamp: the timestamp in seconds where the topic starts in the video (e.g., 120 for 2 minutes)
 
 Format the response as a JSON array. Each chapter should have:
 {
@@ -42,7 +44,10 @@ Format the response as a JSON array. Each chapter should have:
     { "question": "Question 1", "answer": "Detailed answer in plain text, with **bold** for important points." },
     { "question": "Question 2", "answer": "Detailed answer in plain text." }
   ],
-  "youtubeQueries": ["search query 1", "search query 2"]
+  "youtubeQueries": [
+    { "query": "search query 1", "timestamp": 120 },
+    { "query": "search query 2", "timestamp": 45 }
+  ]
 }
 
 Do not use any markdown, HTML, or formatting symbols except for double asterisks (**) to mark important points in the explanation and answers. All other content must be plain text only. Do not use underscores, tags, or double asterisks for titles. Just write the text as it should appear to a student.
@@ -62,6 +67,7 @@ ${syllabusContent}`,
       geminiData.candidates &&
       geminiData.candidates[0]?.content?.parts?.[0]?.text;
     
+    console.log('Gemini raw response:', text);
     // Try to extract JSON from the response
     const match = text?.match(/\[[\s\S]*\]/);
     const chaptersJson = match ? match[0] : text;
@@ -69,6 +75,7 @@ ${syllabusContent}`,
     let chapters;
     try {
       chapters = JSON.parse(chaptersJson);
+      console.log('Parsed chapters:', chapters);
     } catch (parseError) {
       // If parsing fails, create basic chapters from content
       chapters = createBasicChapters(syllabusContent);
@@ -78,22 +85,27 @@ ${syllabusContent}`,
     for (const chapter of chapters) {
       chapter.youtubeVideos = [];
       if (chapter.youtubeQueries && Array.isArray(chapter.youtubeQueries)) {
-        for (const query of chapter.youtubeQueries) {
+        for (const queryObj of chapter.youtubeQueries) {
+          const query = typeof queryObj === "string" ? queryObj : queryObj.query;
+          const timestamp = typeof queryObj === "object" && queryObj.timestamp ? queryObj.timestamp : 0;
           const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&order=relevance&q=${encodeURIComponent(
             query
           )}&key=${YOUTUBE_API_KEY}`;
           try {
             const ytRes = await fetch(searchUrl);
             const ytData = await ytRes.json();
+            console.log('YouTube API response for query', query, ytData);
             if (ytData.items && ytData.items.length > 0) {
               const item = ytData.items[0];
               chapter.youtubeVideos.push({
                 title: item.snippet.title,
-                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-                thumbnail: item.snippet.thumbnails?.default?.url || null
+                url: `https://www.youtube.com/watch?v=${item.id.videoId}${timestamp ? `&t=${timestamp}s` : ""}`,
+                thumbnail: item.snippet.thumbnails?.default?.url || null,
+                timestamp
               });
             }
           } catch (err) {
+            console.error('YouTube API error for query', query, err);
             // Ignore YouTube errors for this query
           }
         }
@@ -123,7 +135,7 @@ function createBasicChapters(content: string) {
         { question: "Explain a key example from this chapter.", answer: "A key example is ..." },
         { question: "List important points to remember from this chapter.", answer: "Important points are ..." }
       ],
-      youtubeQueries: ["example search query"],
+      youtubeQueries: [{ query: "example search query", timestamp: 0 }],
       youtubeVideos: []
     });
   });
