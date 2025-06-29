@@ -1,5 +1,5 @@
-export const dynamic = "force-dynamic";
 "use client";
+export const dynamic = "force-dynamic";
 import React, { useState, useEffect } from "react";
 import { Plus, Send, Users, Mail, Lightbulb } from "lucide-react";
 import { db } from "@/firebase/config";
