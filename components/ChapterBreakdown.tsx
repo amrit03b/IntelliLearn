@@ -539,7 +539,7 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
           {translating && <span className="ml-2 text-blue-600 text-xs">Translating...</span>}
           <button
             type="button"
-            className={`ml-2 px-3 py-1 rounded text-white text-sm transition-colors ${isSpeaking ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
+            className="ml-2 px-3 py-1 rounded border border-blue-600 text-blue-600 bg-transparent text-sm font-semibold transition-colors hover:bg-blue-600 hover:text-white"
             onClick={() => {
               if (!expandedChapter) return;
               if (isSpeaking) {
@@ -551,14 +551,12 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                 expandedChapter.title,
                 expandedChapter.explanation,
                 ...(expandedChapter.mostProbableQuestions?.map(q => `${q.question} ${q.answer}`) || [])
-              ].join('. ');
-              window.speechSynthesis.cancel();
+              ].join(". ");
               const utterance = new window.SpeechSynthesisUtterance(textToRead);
-              utterance.lang = 'en-US';
               window.speechSynthesis.speak(utterance);
             }}
           >
-            {isSpeaking ? '⏹ Stop' : '🔊 Speak'}
+            {isSpeaking ? 'Pause' : 'Speak'}
           </button>
           <button
             type="button"
