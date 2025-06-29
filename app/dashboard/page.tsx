@@ -18,9 +18,10 @@ import {
   Lightbulb,
   FileVideo,
   CreditCard,
+  StickyNote,
 } from "lucide-react"
 import { useAuth } from "../../contexts/AuthContext"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import SyllabusUploader from "../../components/SyllabusUploader"
 import ChapterBreakdown from "../../components/ChapterBreakdown"
 import { db } from "../../firebase/config"
@@ -29,6 +30,7 @@ import { collection, query, where, getDocs, orderBy } from "firebase/firestore"
 export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [syllabuses, setSyllabuses] = useState<any[]>([])
@@ -104,6 +106,21 @@ export default function DashboardPage() {
     }
   }, [user, loading, refresh])
 
+  // Handle URL parameter for specific chat
+  useEffect(() => {
+    if (breakdowns.length > 0) {
+      const chatId = searchParams.get('chat')
+      if (chatId) {
+        const targetBreakdown = breakdowns.find(b => b.id === chatId)
+        if (targetBreakdown) {
+          setSelectedBreakdown(targetBreakdown)
+        }
+      } else if (breakdowns.length > 0 && !selectedBreakdown) {
+        setSelectedBreakdown(breakdowns[0])
+      }
+    }
+  }, [breakdowns, searchParams, selectedBreakdown])
+
   // Debug logging for selectedBreakdown
   useEffect(() => {
     if (selectedBreakdown) {
@@ -167,6 +184,14 @@ export default function DashboardPage() {
               <span className="text-sm text-slate-600">My Groups</span>
             </button>
 
+            <button 
+              onClick={() => router.push('/notes')}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
+            >
+              <StickyNote className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-blue-600">View Notes</span>
+            </button>
+
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -222,7 +247,19 @@ export default function DashboardPage() {
                 ))}
               </ul>
             )}
-            </div>
+          </div>
+          
+          {/* Notes Section */}
+          <div className="p-6 border-b border-slate-100">
+            <h3 className="text-md font-semibold text-slate-700 mb-4">Notes</h3>
+            <button
+              onClick={() => router.push('/notes')}
+              className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
+            >
+              <StickyNote className="h-4 w-4" />
+              <span className="font-medium">My Notes</span>
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -252,7 +289,12 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <ChapterBreakdown chapters={selectedBreakdown.breakdown} key={selectedBreakdown.id} />
+                  <ChapterBreakdown 
+                    chapters={selectedBreakdown.breakdown} 
+                    key={selectedBreakdown.id}
+                    chatId={selectedBreakdown.id}
+                    chatTitle={selectedBreakdown.title || "Untitled Chat"}
+                  />
                 </div>
               ) : (
                 <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
