@@ -8,7 +8,6 @@ import {
   Upload,
   FileText,
   Users,
-  Settings,
   LogOut,
   ChevronDown,
   Plus,
@@ -28,7 +27,7 @@ import { db } from "../../firebase/config"
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore"
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -47,6 +46,15 @@ export default function DashboardPage() {
       router.push("/login")
     }
   }, [user, loading, router])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push("/")
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
+  }
 
   const fetchSyllabuses = async (uid: string) => {
     setSyllabusLoading(true)
@@ -206,11 +214,10 @@ export default function DashboardPage() {
 
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2">
-                  <button className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:bg-slate-50 w-full text-left">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </button>
-                  <button className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:bg-slate-50 w-full text-left">
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:bg-slate-50 w-full text-left"
+                  >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
                   </button>
