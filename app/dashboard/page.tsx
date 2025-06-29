@@ -172,43 +172,45 @@ export default function DashboardPage() {
   const handleSyllabusUploaded = () => setRefresh((r) => r + 1);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="flex items-center justify-between px-6 py-4">
+      <header className="bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm sticky top-0 z-40">
+        <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center logo-animation">
-              <BookOpen className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center logo-animation shadow-md">
+              <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-800 brand-text-animation">IntelliLearn</span>
+            <span className="text-2xl font-extrabold brand-text-animation tracking-tight">
+              <span className="text-blue-600">Intelli</span><span className="text-slate-900">Learn</span>
+            </span>
           </div>
 
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => router.push('/group-chat')}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-slate-100 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-colors"
             >
-              <Users className="h-4 w-4 text-slate-600" />
-              <span className="text-sm text-slate-600">My Groups</span>
+              <Users className="h-5 w-5" />
+              <span>My Groups</span>
             </button>
 
             <button 
               onClick={() => router.push('/notes')}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-colors"
             >
-              <StickyNote className="h-4 w-4 text-blue-600" />
-              <span className="text-sm text-blue-600">View Notes</span>
+              <StickyNote className="h-5 w-5" />
+              <span>View Notes</span>
             </button>
 
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">{initials}</span>
+                <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center shadow">
+                  <span className="text-white text-base font-bold">{initials}</span>
                 </div>
-                <span className="text-slate-700">{displayName}</span>
+                <span className="text-slate-800 font-semibold">{displayName}</span>
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               </button>
 
@@ -216,7 +218,7 @@ export default function DashboardPage() {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2">
                   <button 
                     onClick={handleLogout}
-                    className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:bg-slate-50 w-full text-left"
+                    className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:bg-blue-50 w-full text-left font-semibold"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
@@ -230,9 +232,9 @@ export default function DashboardPage() {
 
       <div className="flex">
         {/* Sidebar: Past Chats */}
-        <aside className="w-72 bg-white border-r border-slate-200 min-h-screen flex flex-col">
-          <div className="p-6 border-b border-slate-100">
-            <h3 className="text-md font-semibold text-slate-700 mb-4">Past Chats</h3>
+        <aside className="w-72 bg-slate-100 border-r border-slate-200 min-h-screen flex flex-col shadow-sm">
+          <div className="p-6 border-b border-slate-200">
+            <h3 className="text-md font-bold text-slate-700 mb-4 tracking-tight">Past Chats</h3>
             {loadingBreakdowns ? (
               <div className="text-slate-400">Loading...</div>
             ) : breakdownError ? (
@@ -244,24 +246,23 @@ export default function DashboardPage() {
                 {breakdowns.map((b) => (
                   <li key={b.id}>
                     <button
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedBreakdown?.id === b.id ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-50 text-slate-700"}`}
+                      className={`w-full text-left px-3 py-2 rounded-lg font-semibold transition-colors shadow-sm ${selectedBreakdown?.id === b.id ? "bg-blue-100 text-blue-700" : "hover:bg-slate-200 text-slate-700"}`}
                       onClick={() => setSelectedBreakdown(b)}
                     >
-                      <div className="truncate font-medium">{b.title}</div>
-                      <div className="text-xs text-slate-400 truncate">{b.createdAt?.toDate?.().toLocaleString?.() || ""}</div>
-              </button>
+                      <div className="truncate font-bold text-base">{b.title}</div>
+                      <div className="text-xs text-slate-500 truncate">{b.createdAt?.toDate?.().toLocaleString?.() || ""}</div>
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
-            </div>
-          
+          </div>
           {/* Notes Section */}
-          <div className="p-6 border-b border-slate-100">
-            <h3 className="text-md font-semibold text-slate-700 mb-4">Notes</h3>
+          <div className="p-6 border-b border-slate-200">
+            <h3 className="text-md font-bold text-slate-700 mb-4 tracking-tight">Notes</h3>
             <button
               onClick={() => router.push('/notes')}
-              className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
+              className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-colors"
             >
               <StickyNote className="h-4 w-4" />
               <span className="font-medium">My Notes</span>
@@ -270,11 +271,11 @@ export default function DashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-10">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome back, {displayName}!</h1>
-              <p className="text-slate-600">Ready to continue your learning journey?</p>
+              <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Welcome back, {displayName}!</h1>
+              <p className="text-slate-600 text-lg">Ready to continue your learning journey?</p>
             </div>
 
             <div className="space-y-8">
@@ -285,10 +286,10 @@ export default function DashboardPage() {
 
               {/* Chapter Breakdown */}
               {selectedBreakdown ? (
-                <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-md">
                   <div className="flex items-center justify-between mb-4">
-                      <div>
-                      <h2 className="text-lg font-semibold text-slate-800">
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900">
                         {selectedBreakdown.title || "Syllabus"}
                       </h2>
                       <p className="text-sm text-slate-500">
@@ -304,9 +305,9 @@ export default function DashboardPage() {
                   />
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-md">
                   <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-800 mb-2">No Syllabus Selected</h3>
+                  <h3 className="text-lg font-bold text-slate-800 mb-2">No Syllabus Selected</h3>
                   <p className="text-slate-600 mb-4">Select a past chat or upload a new syllabus to get started.</p>
                 </div>
               )}
