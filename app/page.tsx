@@ -12,12 +12,14 @@ export default function HomePage() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center logo-animation">
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-800 brand-text-animation">IntelliLearn</span>
+              <span className="text-xl font-bold brand-text-animation">
+                <span className="text-blue-600">Intelli</span><span className="text-slate-900">Learn</span>
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
                 href="/login"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                className="bg-transparent border border-blue-600 text-blue-600 px-5 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-colors flex items-center space-x-2 shadow-lg font-semibold text-base"
               >
                 <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <g clipPath="url(#clip0_17_40)">
@@ -42,8 +44,8 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-center text-slate-900 mb-6 hero-title">
-            IntelliLearn: Learn Deeper , <span className="text-blue-600">Learn Smarter</span>
+          <h1 className="text-4xl md:text-6xl font-bold text-center mb-6 hero-title">
+            <span className="text-blue-600">Intelli</span><span className="text-slate-900">Learn</span>: Learn Deeper, Learn Smarter
           </h1>
           <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto hero-subtitle">
             Transforming syllabuses into interactive, AI-powered knowledge — <span className="text-blue-600 font-bold text-2xl">TOGETHER</span> ✨

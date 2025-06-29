@@ -291,13 +291,13 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
       
       if (explanationElement) {
         const elementRect = explanationElement.getBoundingClientRect();
-        setSelectionInfo({
-          text: sel.toString(),
+      setSelectionInfo({
+        text: sel.toString(),
           x: rect.right - elementRect.left,
           y: rect.bottom - elementRect.top,
-          chapterId,
-        });
-        setNoteText(sel.toString());
+        chapterId,
+      });
+      setNoteText(sel.toString());
         setNoteTitle(`Note from ${chapters.find(c => c.id === chapterId)?.title || 'Chapter'}`);
       }
     } else {
@@ -372,7 +372,7 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
         content: noteText.trim(),
         chatId: chatId,
         chatTitle: chatTitle || "Untitled Chat",
-        chapterId: selectionInfo.chapterId,
+          chapterId: selectionInfo.chapterId,
         chapterTitle: chapter?.title || "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -382,8 +382,8 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
       const docRef = await addDoc(collection(db, "notes"), noteData);
       console.log("Note saved successfully with ID:", docRef.id);
 
-      setShowAddNoteModal(false);
-      setNoteText("");
+    setShowAddNoteModal(false);
+    setNoteText("");
       setNoteTitle("");
       setSelectionInfo(null);
       
@@ -658,13 +658,13 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-slate-700 mb-2">Content</label>
-                          <textarea
+                      <textarea
                             className="w-full border border-slate-300 rounded p-2"
                             rows={4}
-                            value={noteText}
-                            onChange={e => setNoteText(e.target.value)}
+                        value={noteText}
+                        onChange={e => setNoteText(e.target.value)}
                             placeholder="Edit the selected text..."
-                          />
+                      />
                         </div>
                       </div>
                       <DialogFooter>

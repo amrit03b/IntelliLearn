@@ -254,7 +254,7 @@ export default function DashboardPage() {
                 ))}
               </ul>
             )}
-          </div>
+            </div>
           
           {/* Notes Section */}
           <div className="p-6 border-b border-slate-100">
