@@ -40,7 +40,6 @@ export default function GroupChatPage() {
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [joinMessage, setJoinMessage] = useState("");
   const [topicInput, setTopicInput] = useState("");
   const [topicLoading, setTopicLoading] = useState(false);
@@ -49,6 +48,7 @@ export default function GroupChatPage() {
   const [selectedBreakdown, setSelectedBreakdown] = useState<any | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [autoJoinGroupId, setAutoJoinGroupId] = useState<string | null>(null);
 
   // Subscribe to all groups (not just where user is a member)
   useEffect(() => {
@@ -76,30 +76,37 @@ export default function GroupChatPage() {
     return () => unsub();
   }, [selectedGroupId]);
 
-  // Auto-join group via link if in pendingInvites
+  // Read groupId from query params on mount (client-side)
   useEffect(() => {
-    if (!user || !groups.length) return;
-    const groupId = searchParams.get("groupId");
-    if (!groupId) return;
-    const group = groups.find(g => g.id === groupId);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const groupId = params.get('groupId');
+      if (groupId) setAutoJoinGroupId(groupId);
+    }
+  }, []);
+
+  // Auto-join group if groupId is present in query params
+  useEffect(() => {
+    if (!user || !groups.length || !autoJoinGroupId) return;
+    const group = groups.find(g => g.id === autoJoinGroupId);
     if (!group) return;
     if (group.members.includes(user.uid)) {
-      setSelectedGroupId(groupId);
+      setSelectedGroupId(autoJoinGroupId);
       return;
     }
     if (group.pendingInvites && group.pendingInvites.includes(user.email?.toLowerCase() || '')) {
       // Add user to group and remove from pendingInvites
       const update = async () => {
-        await updateDoc(doc(db, "groups", groupId), {
+        await updateDoc(doc(db, "groups", autoJoinGroupId), {
           members: arrayUnion(user.uid),
           pendingInvites: group.pendingInvites?.filter((e: string) => e !== user.email?.toLowerCase()) || [],
         });
         setJoinMessage("You have joined the group!");
-        setSelectedGroupId(groupId);
+        setSelectedGroupId(autoJoinGroupId);
       };
       update();
     }
-  }, [user, groups, searchParams]);
+  }, [user, groups, autoJoinGroupId]);
 
   // Listen for all generated breakdowns for the selected group
   useEffect(() => {
