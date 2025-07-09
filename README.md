@@ -1,18 +1,22 @@
 # IntelliLearn
 
-A modern learning platform built with Next.js, TypeScript, and Tailwind CSS.
+A modern, collaborative learning platform built with Next.js, TypeScript, and Tailwind CSS.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Famrit-codes%2Fv0-intellilearn-frontend)
+**Live Demo:** [https://intelli-learn-brown.vercel.app/](https://intelli-learn-brown.vercel.app/)
 
 ## Features
 
-- Modern UI with Tailwind CSS
-- TypeScript for type safety
-- Next.js 14 with App Router
-- Responsive design
-- Authentication system
-- Knowledge tree visualization
-- YouTube suggestions integration
+- **AI-Powered Syllabus Breakdown:** Upload or paste your syllabus and get an automatic breakdown into chapters, detailed explanations, probable exam questions, and practice quizzes.
+- **Knowledge Tree Visualization:** Visualize your syllabus as an interactive knowledge tree, with expandable nodes and AI-generated explanations for each subtopic.
+- **YouTube Integration:** Get relevant YouTube video suggestions and direct links for each chapter and subtopic.
+- **Collaborative Group Chat:** Create or join study groups, chat with peers, and share AI-generated breakdowns in real time.
+- **Personal Notes:** Save important concepts and explanations as notes, organized by chapter and chat session.
+- **Translation:** Instantly translate chapters and explanations into multiple languages using AI.
+- **Personalized Quizzes:** Practice with AI-generated multiple-choice questions tailored to your syllabus content.
+- **Authentication:** Secure login and signup with Google authentication (Firebase Auth).
+- **Responsive Dashboard:** Access all your syllabuses, breakdowns, notes, and groups from a modern, responsive dashboard.
+- **Modern UI:** Built with Tailwind CSS and shadcn/ui for a beautiful, accessible user experience.
+- **TypeScript & Next.js 14:** Robust, type-safe, and scalable architecture.
 
 ## Getting Started
 
@@ -23,12 +27,14 @@ A modern learning platform built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Deployment
 
-**[https://vercel.com/amrit-codes/v0-intellilearn-frontend](https://vercel.com/amrit-codes/v0-intellilearn-frontend)**
+**Live Site:** [https://intelli-learn-brown.vercel.app/](https://intelli-learn-brown.vercel.app/)
 
 ## Tech Stack
 
-- Next.js 14
+- Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
-- Firebase
-- Shadcn/ui components
+- Firebase (Auth, Firestore)
+- shadcn/ui components
+- Google Gemini API (AI content generation)
+- YouTube Data API (video suggestions)
