@@ -7,6 +7,7 @@ import {
   Brain,
   Upload,
   FileText,
+  Users,
   LogOut,
   ChevronDown,
   Plus,
@@ -16,6 +17,7 @@ import {
   Lightbulb,
   FileVideo,
   CreditCard,
+  StickyNote,
 } from "lucide-react"
 import { useAuth } from "../../contexts/AuthContext"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -179,11 +181,27 @@ export default function DashboardPage() {
               <BookOpen className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-extrabold brand-text-animation tracking-tight">
-              <span className="text-blue-600">Edu</span><span className="text-slate-900">Sphere</span>
+              <span className="text-blue-600">Intelli</span><span className="text-slate-900">Learn</span>
             </span>
           </div>
 
           <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => router.push('/group-chat')}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-slate-100 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-colors"
+            >
+              <Users className="h-5 w-5" />
+              <span>My Groups</span>
+            </button>
+
+            <button 
+              onClick={() => router.push('/notes')}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-colors"
+            >
+              <StickyNote className="h-5 w-5" />
+              <span>View Notes</span>
+            </button>
+
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -239,7 +257,17 @@ export default function DashboardPage() {
               </ul>
             )}
           </div>
-          
+          {/* Notes Section */}
+          <div className="p-6 border-b border-slate-200">
+            <h3 className="text-md font-bold text-slate-700 mb-4 tracking-tight">Notes</h3>
+            <button
+              onClick={() => router.push('/notes')}
+              className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold shadow transition-colors"
+            >
+              <StickyNote className="h-4 w-4" />
+              <span className="font-medium">My Notes</span>
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}

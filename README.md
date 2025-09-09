@@ -1,4 +1,4 @@
-# EduSphere
+# IntelliLearn
 
 A modern, collaborative learning platform built with Next.js, TypeScript, and Tailwind CSS.
 
@@ -9,12 +9,12 @@ A modern, collaborative learning platform built with Next.js, TypeScript, and Ta
 - **AI-Powered Syllabus Breakdown:** Upload or paste your syllabus and get an automatic breakdown into chapters, detailed explanations, probable exam questions, and practice quizzes.
 - **Knowledge Tree Visualization:** Visualize your syllabus as an interactive knowledge tree, with expandable nodes and AI-generated explanations for each subtopic.
 - **YouTube Integration:** Get relevant YouTube video suggestions and direct links for each chapter and subtopic.
-- **Collaborative Group Chat:** (Removed)
-- **Personal Notes:** (Removed)
+- **Collaborative Group Chat:** Create or join study groups, chat with peers, and share AI-generated breakdowns in real time.
+- **Personal Notes:** Save important concepts and explanations as notes, organized by chapter and chat session.
 - **Translation:** Instantly translate chapters and explanations into multiple languages using AI.
 - **Personalized Quizzes:** Practice with AI-generated multiple-choice questions tailored to your syllabus content.
 - **Authentication:** Secure login and signup with Google authentication (Firebase Auth).
-- **Responsive Dashboard:** Access all your syllabuses and breakdowns from a modern, responsive dashboard.
+- **Responsive Dashboard:** Access all your syllabuses, breakdowns, notes, and groups from a modern, responsive dashboard.
 - **Modern UI:** Built with Tailwind CSS and shadcn/ui for a beautiful, accessible user experience.
 - **TypeScript & Next.js 14:** Robust, type-safe, and scalable architecture.
 

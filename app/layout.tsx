@@ -4,7 +4,7 @@ import "./globals.css"
 import { AuthProvider } from "../contexts/AuthContext"
 
 export const metadata: Metadata = {
-  title: "EduSphere - Master Your Studies, Together",
+  title: "IntelliLearn - Master Your Studies, Together",
   description: "A modern learning platform that helps you master your studies with AI-powered tools and collaborative features.",
   keywords: "AI learning, collaborative study, knowledge trees, educational technology",
     generator: 'v0.dev'
