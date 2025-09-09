@@ -1,17 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronDown, ChevronRight, BookOpen, FileText, HelpCircle, Eye, EyeOff, Play } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose
-} from "@/components/ui/dialog";
+
 import { useAuth } from "../contexts/AuthContext";
-import { db } from "../firebase/config";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface Chapter {
   id: string;
@@ -77,11 +67,6 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
 
   const [quizLoading, setQuizLoading] = useState<{ [key: string]: boolean }>({});
 
-  const [selectionInfo, setSelectionInfo] = useState<{ text: string; x: number; y: number; chapterId: string } | null>(null);
-  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
-  const [noteText, setNoteText] = useState("");
-  const [noteTitle, setNoteTitle] = useState("");
-  const [savingNote, setSavingNote] = useState(false);
   const explanationRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const [selectedLanguage, setSelectedLanguage] = useState("en");
@@ -282,127 +267,18 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
   }, [syllabusContent]);
 
   // Handler for text selection in explanation
-  const handleMouseUp = (chapterId: string) => {
-    const sel = window.getSelection();
-    if (sel && sel.toString().trim().length > 0) {
-      const range = sel.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      const explanationElement = explanationRefs.current[chapterId];
-      
-      if (explanationElement) {
-        const elementRect = explanationElement.getBoundingClientRect();
-      setSelectionInfo({
-        text: sel.toString(),
-          x: rect.right - elementRect.left,
-          y: rect.bottom - elementRect.top,
-        chapterId,
-      });
-      setNoteText(sel.toString());
-        setNoteTitle(`Note from ${chapters.find(c => c.id === chapterId)?.title || 'Chapter'}`);
-      }
-    } else {
-      setSelectionInfo(null);
-    }
-  };
+  const handleMouseUp = (chapterId: string) => {};
 
-  // Clear selection when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (selectionInfo) {
-        const target = event.target as Element;
-        const explanationElement = explanationRefs.current[selectionInfo.chapterId];
-        if (explanationElement && !explanationElement.contains(target)) {
-          setSelectionInfo(null);
-        }
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [selectionInfo]);
+  // Notes feature removed
 
   // Handler for clicking 'Add' button
-  const handleAddNoteClick = () => {
-    setShowAddNoteModal(true);
-    // Don't clear selectionInfo here, we need it for saving the note
-  };
+  const handleAddNoteClick = () => {};
 
   // Handler for closing modal
-  const handleCloseModal = () => {
-    setShowAddNoteModal(false);
-    setNoteText("");
-    setNoteTitle("");
-    setSelectionInfo(null); // Clear selection info when closing modal
-  };
+  const handleCloseModal = () => {};
 
   // Handler for confirming add note
-  const handleConfirmAddNote = async () => {
-    if (!user || !noteText.trim() || !noteTitle.trim() || !chatId || !selectionInfo) {
-      alert("Please provide a title and content for your note.");
-      return;
-    }
-
-    setSavingNote(true);
-    try {
-      // Debug Firebase connectivity
-      console.log("Firebase config check:", {
-        db: !!db,
-        user: !!user,
-        userUid: user?.uid,
-        chatId: chatId,
-        selectionInfo: selectionInfo
-      });
-
-      const chapter = chapters.find(c => c.id === selectionInfo.chapterId);
-      console.log("Saving note with data:", {
-        userId: user.uid,
-        title: noteTitle.trim(),
-        content: noteText.trim(),
-        chatId: chatId,
-        chatTitle: chatTitle || "Untitled Chat",
-        chapterId: selectionInfo.chapterId,
-        chapterTitle: chapter?.title || "",
-      });
-      
-      const noteData = {
-        userId: user.uid,
-        title: noteTitle.trim(),
-        content: noteText.trim(),
-        chatId: chatId,
-        chatTitle: chatTitle || "Untitled Chat",
-          chapterId: selectionInfo.chapterId,
-        chapterTitle: chapter?.title || "",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      console.log("Attempting to save note to Firebase...");
-      const docRef = await addDoc(collection(db, "notes"), noteData);
-      console.log("Note saved successfully with ID:", docRef.id);
-
-    setShowAddNoteModal(false);
-    setNoteText("");
-      setNoteTitle("");
-      setSelectionInfo(null);
-      
-      // Show success message with link to notes
-      if (confirm("Note saved successfully! Would you like to view all your notes?")) {
-        window.open('/notes', '_blank');
-      }
-    } catch (err: any) {
-      console.error("Failed to save note:", err);
-      console.error("Error details:", {
-        message: err.message,
-        code: err.code,
-        stack: err.stack
-      });
-      alert(`Failed to save note: ${err.message}`);
-    } finally {
-      setSavingNote(false);
-    }
-  };
+  const handleConfirmAddNote = async () => {};
 
   // Translation logic
   const translate = async (text: string, type: string, targetLang: string) => {
@@ -597,95 +473,16 @@ const ChapterBreakdown: React.FC<ChapterBreakdownProps> = ({ syllabusContent, ch
                   <h5 className="font-medium text-slate-800 mb-3 flex items-center space-x-2">
                     <FileText className="h-4 w-4 text-blue-600" />
                     <span>Detailed Explanation</span>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                      Select text to create notes
-                    </span>
                   </h5>
                   <div
                     className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-line relative"
                     ref={el => { explanationRefs.current[chapter.id] = el; }}
-                    onMouseUp={() => handleMouseUp(chapter.id)}
                     style={{ userSelect: 'text', cursor: 'text' }}
                   >
                     {renderWithBold(chapter.explanation)}
-                    {/* Floating Add button */}
-                    {selectionInfo && selectionInfo.chapterId === chapter.id && (
-                      <button
-                        style={{
-                          position: 'absolute',
-                          left: selectionInfo.x,
-                          top: selectionInfo.y + 8,
-                          zIndex: 10,
-                          background: '#2563eb',
-                          color: 'white',
-                          borderRadius: 6,
-                          padding: '4px 12px',
-                          border: 'none',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                          fontSize: 12,
-                          cursor: 'pointer',
-                          fontWeight: '500',
-                        }}
-                        onClick={handleAddNoteClick}
-                      >
-                        Add Note
-                      </button>
-                    )}
                   </div>
                 </div>
-                {/* Add Note Modal */}
-                {showAddNoteModal && (
-                  <Dialog open={showAddNoteModal} onOpenChange={setShowAddNoteModal}>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add to Notes</DialogTitle>
-                        <DialogDescription>
-                          You can edit the selected text and add a title before saving it to your notes.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Title</label>
-                          <input
-                            type="text"
-                            className="w-full border border-slate-300 rounded p-2"
-                            value={noteTitle}
-                            onChange={e => setNoteTitle(e.target.value)}
-                            placeholder="Enter a title for your note..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Content</label>
-                      <textarea
-                            className="w-full border border-slate-300 rounded p-2"
-                            rows={4}
-                        value={noteText}
-                        onChange={e => setNoteText(e.target.value)}
-                            placeholder="Edit the selected text..."
-                      />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <button
-                            className="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300"
-                            onClick={handleCloseModal}
-                            disabled={savingNote}
-                          >
-                            Cancel
-                          </button>
-                        </DialogClose>
-                        <button
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={handleConfirmAddNote}
-                          disabled={savingNote || !noteTitle.trim() || !noteText.trim()}
-                        >
-                          {savingNote ? "Saving..." : "Save Note"}
-                        </button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
+                
                 {/* Most Probable Exam Questions */}
                 {chapter.mostProbableQuestions && chapter.mostProbableQuestions.length > 0 && (
                   <div>

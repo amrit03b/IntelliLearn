@@ -13,7 +13,7 @@ export default function HomePage() {
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold brand-text-animation">
-                <span className="text-blue-600">Intelli</span><span className="text-slate-900">Learn</span>
+                <span className="text-blue-600">Edu</span><span className="text-slate-900">Sphere</span>
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -45,7 +45,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-center mb-6 hero-title">
-            <span className="text-blue-600">Intelli</span><span className="text-slate-900">Learn</span>: Learn Deeper, Learn Smarter
+            <span className="text-blue-600">Edu</span><span className="text-slate-900">Sphere</span>: Learn Deeper, Learn Smarter
           </h1>
           <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto hero-subtitle">
             Transforming syllabuses into interactive, AI-powered knowledge — <span className="text-blue-600 font-bold text-2xl">TOGETHER</span> ✨

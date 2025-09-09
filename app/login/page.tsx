@@ -37,14 +37,14 @@ export default function LoginPage() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center logo-animation">
               <BookOpen className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-bold text-slate-800 brand-text-animation">IntelliLearn</span>
+            <span className="text-2xl font-bold text-slate-800 brand-text-animation">EduSphere</span>
           </Link>
         </div>
 
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome to IntelliLearn</h1>
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome to EduSphere</h1>
             <p className="text-slate-600">Sign in with your Google account to continue your learning journey</p>
           </div>
 

@@ -52,7 +52,7 @@
   @apply bg-slate-400;
 }
 
-/* IntelliLearn Logo Animations */
+/* EduSphere Logo Animations */
 @keyframes logoPulse {
   0%, 100% {
     transform: scale(1);
